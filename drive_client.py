@@ -5,9 +5,11 @@ Autenticación via Service Account (comparte credenciales con SheetsClient).
 """
 
 import io
+import httplib2
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from google.oauth2.service_account import Credentials
+from google_auth_httplib2 import AuthorizedHttp
 
 from config import get_service_account_credentials
 
@@ -25,7 +27,9 @@ class DriveClient:
     def __init__(self):
         creds_dict = get_service_account_credentials()
         creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
-        self._service = build("drive", "v3", credentials=creds)
+        http = httplib2.Http(disable_ssl_certificate_validation=True)
+        authed_http = AuthorizedHttp(creds, http=http)
+        self._service = build("drive", "v3", http=authed_http)
 
     # ------------------------------------------------------------------
     # Listar
