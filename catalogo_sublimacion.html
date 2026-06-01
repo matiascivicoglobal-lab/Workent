@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guía de Sublimación — Global Electronics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: #f0f4ff; color: #1a1a2e; }
+
+  /* COVER */
+  .cover {
+    background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 60%, #00c4cc 100%);
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 60px 20px; position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ''; position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .cover-badge {
+    background: #ffeb3b; color: #1a1a2e; padding: 8px 20px;
+    border-radius: 50px; font-weight: 900; font-size: 14px;
+    letter-spacing: 2px; margin-bottom: 30px; z-index:1;
+  }
+  .cover h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900;
+    color: white; line-height: 1.1; z-index:1; margin-bottom: 10px;
+  }
+  .cover h1 span { color: #ffeb3b; display: block; }
+  .cover .subtitle {
+    font-size: 1.3rem; color: rgba(255,255,255,0.85);
+    margin: 20px 0 40px; z-index:1; max-width: 500px;
+  }
+  .cover-pills { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; z-index:1; }
+  .pill {
+    background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
+    color: white; padding: 8px 18px; border-radius: 50px; font-weight: 700; font-size: 0.9rem;
+  }
+  .cover-footer { position: absolute; bottom: 30px; color: rgba(255,255,255,0.6); font-size: 0.85rem; z-index:1; }
+
+  /* INTRO */
+  .intro {
+    background: #1a73e8; color: white; padding: 60px 40px; text-align: center;
+  }
+  .intro h2 { font-size: 2rem; font-weight: 900; margin-bottom: 16px; }
+  .intro p { font-size: 1.1rem; max-width: 700px; margin: 0 auto 30px; opacity: 0.9; line-height: 1.7; }
+  .intro-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 30px; }
+  .intro-card {
+    background: rgba(255,255,255,0.12); border-radius: 16px;
+    padding: 24px; width: 200px; text-align: center;
+  }
+  .intro-card .ico { font-size: 2.5rem; margin-bottom: 10px; }
+  .intro-card h3 { font-size: 1rem; font-weight: 800; }
+
+  /* SECTIONS */
+  .content { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+  
+  .category-section {
+    background: white; border-radius: 24px; margin-bottom: 40px;
+    overflow: hidden; box-shadow: 0 4px 24px rgba(26,115,232,0.1);
+  }
+  .cat-header {
+    background: linear-gradient(135deg, #1a73e8, #00c4cc);
+    padding: 28px 32px; display: flex; align-items: center; gap: 20px; color: white;
+  }
+  .cat-icon { font-size: 3rem; }
+  .cat-header h2 { font-size: 1.8rem; font-weight: 900; }
+  .cat-desc { opacity: 0.85; font-size: 0.95rem; margin-top: 4px; max-width: 600px; }
+  .cat-count {
+    margin-left: auto; background: rgba(255,255,255,0.2);
+    padding: 8px 16px; border-radius: 50px; font-weight: 800; font-size: 0.9rem; white-space: nowrap;
+  }
+
+  /* GRID */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1px; background: #f0f4ff; padding: 1px;
+  }
+  .product-card {
+    background: white; padding: 0; display: flex; flex-direction: column;
+    transition: transform 0.2s;
+  }
+  .product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,115,232,0.15); z-index:1; }
+  .product-card.unavailable { opacity: 0.5; }
+  
+  .product-img { height: 200px; overflow: hidden; background: #f8f9ff; display:flex; align-items:center; justify-content:center; }
+  .product-img img { width: 100%; height: 100%; object-fit: cover; }
+  .no-img { font-size: 4rem; color: #c5cae9; }
+  
+  .product-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .product-sku { font-size: 0.72rem; color: #1a73e8; font-weight: 800; letter-spacing: 0.5px; }
+  .product-name { font-size: 0.85rem; color: #333; font-weight: 600; line-height: 1.4; flex: 1; }
+  
+  .badge-ok { background: #e6f4ea; color: #137333; font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+  .badge-no { background: #fce8e6; color: #c5221f; font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+  
+  .precios { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+  .precio-row { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 4px 8px; border-radius: 6px; background: #f8f9ff; }
+  .precio-mejor { background: #e8f0fe; font-weight: 800; }
+  .cant { color: #666; }
+  .precio { color: #1a1a2e; font-weight: 700; }
+
+  /* TIPS */
+  .tips-section {
+    background: linear-gradient(135deg, #ffeb3b, #ffc107);
+    border-radius: 24px; padding: 40px; margin: 40px 0;
+    box-shadow: 0 4px 24px rgba(255,193,7,0.3);
+  }
+  .tips-section h2 { font-size: 1.8rem; font-weight: 900; color: #1a1a2e; margin-bottom: 24px; }
+  .tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+  .tip-card {
+    background: white; border-radius: 16px; padding: 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .tip-ico { font-size: 2rem; flex-shrink: 0; }
+  .tip-card h3 { font-size: 0.95rem; font-weight: 800; margin-bottom: 6px; color: #1a1a2e; }
+  .tip-card p { font-size: 0.82rem; color: #555; line-height: 1.5; }
+
+  /* FOOTER */
+  footer {
+    background: #1a1a2e; color: white; text-align: center;
+    padding: 40px 20px;
+  }
+  footer h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; }
+  footer p { opacity: 0.6; font-size: 0.9rem; }
+  footer .footer-link { color: #ffeb3b; text-decoration: none; font-weight: 700; }
+
+  @media print {
+    .category-section { break-inside: avoid; }
+    .cover { min-height: auto; padding: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-badge">⭐ GLOBAL ELECTRONICS</div>
+  <h1>Guía de<span>Sublimación</span></h1>
+  <p class="subtitle">Todo lo que necesitás para personalizar productos y hacer crecer tu negocio de estampado.</p>
+  <div class="cover-pills">
+    <div class="pill">🔥 Planchas</div>
+    <div class="pill">☕ Tazas</div>
+    <div class="pill">🧢 Gorras</div>
+    <div class="pill">👕 Remeras</div>
+    <div class="pill">📄 Papeles</div>
+    <div class="pill">🖨️ Tintas</div>
+  </div>
+  <div class="cover-footer">globalecom.ar · Vigencia: Mayo 2026</div>
+</div>
+
+<!-- INTRO -->
+<div class="intro">
+  <h2>¿Qué es la sublimación?</h2>
+  <p>La sublimación es una técnica de personalización que transforma tintas especiales en gas mediante calor, fijándolas de forma permanente en materiales polímeros. El resultado: colores vivos, durables y sin relieve que no se agrietan ni despegan.</p>
+  <div class="intro-cards">
+    <div class="intro-card"><div class="ico">🌡️</div><h3>Calor + Presión + Tiempo</h3></div>
+    <div class="intro-card"><div class="ico">🎨</div><h3>Colores permanentes</h3></div>
+    <div class="intro-card"><div class="ico">♻️</div><h3>Sin stock de talles</h3></div>
+    <div class="intro-card"><div class="ico">📈</div><h3>Alto margen</h3></div>
+  </div>
+</div>
+
+<!-- CATALOG CONTENT -->
+<div class="content">
+
+
+    <section class="category-section">
+        <div class="cat-header">
+            <div class="cat-icon">🔥</div>
+            <div>
+                <h2>Estampadoras</h2>
+                <p class="cat-desc">Planchas de calor para sublimación y transfer. El equipo principal para personalizar tazas, gorras, remeras y más.</p>
+            </div>
+            <div class="cat-count">9 disponibles</div>
+        </div>
+        <div class="products-grid">
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1dHNLHT8mmZ86YHkAlmhpLdUwp-rUDoi8&sz=w400" alt="PLANCHA-SUB-26X26-PORT" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-26X26-PORT</div>
+            <div class="product-name">Plancha de Calor para Sublimación Plana Portatil 26x26cm (10x10 pulgadas) - Rang...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 105,79</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 99,18 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 95,21</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=15CoPYZ_jc63b2O0M3LG4e4puGJn1Nhlo&sz=w400" alt="PLANCHA-SUB-30X38" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-30X38</div>
+            <div class="product-name">Plancha de Calor para Sublimación Plana 30x38cm</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 168,36</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 157,83 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 151,52</span></div></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1-HbxcjJlH-KVQtDE7R3WJjQy2r_kuiu9&sz=w400" alt="PLANCHA-SUB-30X38-10EN1" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-30X38-10EN1</div>
+            <div class="product-name">Plancha de Calor para Sublimación 10 en 1 - Plana 30x38cm + Platos 8in/11cm (Res...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1ENHJZPWCyMW8OAgXtkYYYLR2KqOBoJp6&sz=w400" alt="PLANCHA-SUB-30X38-8EN1" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-30X38-8EN1</div>
+            <div class="product-name">Plancha de Calor para Sublimación 8 en 1 - Plana 30x38cm + Platos 8in/11cm (Resi...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 249,82</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 234,21 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 224,84</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1kMlJf3HR_YyVN0tGkH6JPhxTS-qDHoKf&sz=w400" alt="PLANCHA-SUB-30X38-5EN1" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-30X38-5EN1</div>
+            <div class="product-name">Plancha de Calor para Sublimación 5 en 1 - Plana 30x38cm + Platos 8in/11cm (Resi...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 194,59</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 182,43 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 175,13</span></div></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=16EMJqCwl2EHI_pkKiXgi0ksjJ6plzFy1&sz=w400" alt="PLANCHA-SUB-40X60" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-40X60</div>
+            <div class="product-name">Plancha de Calor para Sublimación Plana 40x60cm - Rango Temp 0-399º - Potencia 2...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1IZxFE7JnBWXlQtrW8sNw0ZVCyEX0LtOp&sz=w400" alt="PLANCHA-SUB-GORRA" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-GORRA</div>
+            <div class="product-name">Plancha de Calor para Sublimación de Gorras - Rango Temp 0-220º - Potencia 350w ...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1MDZ91QeoGAVSKWDuimvBxZr3kSHphND1&sz=w400" alt="PLANCHA-SUB-GORRA-PORT" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-GORRA-PORT</div>
+            <div class="product-name">Plancha de Calor para Sublimación de Gorras Portátil de 160x84mm - Rango Temp 3 ...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 60,67</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 56,88 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 54,60</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=13I4DSBIozy0OzPCF9n8FvkWVjVPdSjXl&sz=w400" alt="PLANCHA-SUB-PORTATIL" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-PORTATIL</div>
+            <div class="product-name">Plancha de Calor para Sublimación Portátil de 10.5cm - Rango Temp 3 Modos 140/16...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 32,12</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 30,11 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 28,91</span></div></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1Wpgo3148xEay6Nw6rTfm8Lc2lSQIcNeI&sz=w400" alt="PLANCHA-SUB-TAZA" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-TAZA</div>
+            <div class="product-name">Plancha de Calor para Sublimación de Tazas 11oz - Rango Temp 0-250º - Potencia 3...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1d8idClyiM5iTP8ccjTb-DTuaImEA1-qg&sz=w400" alt="PLANCHA-SUB-TERMO" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-TERMO</div>
+            <div class="product-name">Plancha de Calor para Sublimación de Termos Tazas 30oz</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=10Qn1_5-TwizkAwqP4eN4g-IGw-1aude5&sz=w400" alt="PLANCHA-SUB-AUTO-38X38" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-AUTO-38X38</div>
+            <div class="product-name">Plancha de Calor para Sublimación Automática Plana 38x38cm con Display Digital -...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 301,13</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 281,05 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 269,01</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=15IYki5CuzfCSFOdyNjQMt-UROV0QHp8z&sz=w400" alt="PLANCHA-SUB-AUTO-GORRA" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-AUTO-GORRA</div>
+            <div class="product-name">Plancha de Calor para Sublimación Automática de Gorras 3 en 1 (70/80/90mm) - Ran...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 155,34</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 144,99 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 138,77</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1PePnHH75MCqb4hvk-Y1rZSWOLskya1Dz&sz=w400" alt="PLANCHA-SUB-AUTO-TERMO" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PLANCHA-SUB-AUTO-TERMO</div>
+            <div class="product-name">Plancha de Calor para Sublimación de Termos Tazas 30oz Display Digital - Rango T...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 163,95</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 153,02 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 146,46</span></div></div>
+        </div>
+    </div></div>
+    </section>
+    <section class="category-section">
+        <div class="cat-header">
+            <div class="cat-icon">🎨</div>
+            <div>
+                <h2>Insumos Sublimables</h2>
+                <p class="cat-desc">Artículos listos para personalizar mediante sublimación: tazas, gorras, termos, remeras, llaveros, mousepads y más.</p>
+            </div>
+            <div class="cat-count">38 disponibles</div>
+        </div>
+        <div class="products-grid">
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1D8S5eNoFVDSbf2Ux7QxDgr-ZYvjjAv2I&sz=w400" alt="BOTSUB-ALU-2TOPS-500ML-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">BOTSUB-ALU-2TOPS-500ML-W</div>
+            <div class="product-name">Botella Sublimable de Aluminio con Doble Tapa Deportiva Blanca de 500cm3 - Globa...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1gUmvDMvFNboS_HsbR8sAMrI2GydqLpCE&sz=w400" alt="BOTSUB-ALU-PORTLID-500ML-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">BOTSUB-ALU-PORTLID-500ML-W</div>
+            <div class="product-name">Botella Sublimable de Aluminio con Tapa Deportiva Blanca con Agarre Transportabl...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x60 u.</span><span class="precio">USD 3,10</span></div><div class="precio-row precio-mejor"><span class="cant">x120 u.</span><span class="precio">USD 2,87 ⭐</span></div><div class="precio-row"><span class="cant">x120 u.</span><span class="precio">USD 2,74</span></div></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1PDYKUsaxc7SJNOHTepLZkIg9DwS3Fcaq&sz=w400" alt="BOTSUB-ALU-SPORTCAP-500ML-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">BOTSUB-ALU-SPORTCAP-500ML-W</div>
+            <div class="product-name">Botella Sublimable de Aluminio con Tapa Deportiva Blanca de 500cm3 - Global Elec...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1f1y7qBUBz2z0zhGDV8BTMD7k6vV27y94&sz=w400" alt="CHOPPSUB-GLS-FROST-16OZ" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">CHOPPSUB-GLS-FROST-16OZ</div>
+            <div class="product-name">Chopp Sublimable de Vidrio con Asa Frosted de 16oz 473cm3 - Global Electronics (...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1qrM2uIOrmQilPpNYftQV8l3CR_xwNGHb&sz=w400" alt="GORRATRUCKERSUB-BK" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-BK</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1UhoQ-doXKzvvibpptxoMOjsm1DikmGVV&sz=w400" alt="GORRATRUCKERSUB-BL" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-BL</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1a46iHgVRj299sKaPVUmqVjyPiTN9mET1&sz=w400" alt="GORRATRUCKERSUB-CAM" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-CAM</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1jsuNiCnR_VT0_fcXonE5b3rHqC-dma59&sz=w400" alt="GORRATRUCKERSUB-FBK" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-FBK</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=14RbVtgKRyCi2szcKO7b36Sgfgu_dcvsS&sz=w400" alt="GORRATRUCKERSUB-G" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-G</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1fOad9SAsAcyl5ONiuC_ZcuVH2GDT-QWt&sz=w400" alt="GORRATRUCKERSUB-LBL" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-LBL</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1umDbdRNlZwC5xtqZ5el42FZ47XQzVwOX&sz=w400" alt="GORRATRUCKERSUB-LGR" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-LGR</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1LpjE0p99AaKWR3qq6DU5P7avZuKC39jf&sz=w400" alt="GORRATRUCKERSUB-O" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-O</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1b34Y-BjSpWcV1vMqRcKL4PB60ohTWWyi&sz=w400" alt="GORRATRUCKERSUB-R" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-R</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1tIPoHbefHGfM5v1eXZaxezDvMSjer4rD&sz=w400" alt="GORRATRUCKERSUB-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-W</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1ld3Kj7VHXNTbuEvp1xqbR0Q3fpj7mhJ4&sz=w400" alt="GORRATRUCKERSUB-Y" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">GORRATRUCKERSUB-Y</div>
+            <div class="product-name">Gorra Sublimable Trucker Camionera con Visera de Polyester Talle Unico Regulable...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x360 u.</span><span class="precio">USD 1,06</span></div><div class="precio-row precio-mejor"><span class="cant">x720 u.</span><span class="precio">USD 0,98 ⭐</span></div><div class="precio-row"><span class="cant">x720 u.</span><span class="precio">USD 0,94</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=134Da6xs1_MhfVM93OiF_KIxHh_4L6U5U&sz=w400" alt="LLAVSUB-MTL-DESTAPADOR" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">LLAVSUB-MTL-DESTAPADOR</div>
+            <div class="product-name">Llavero Sublimable Metalico Destapador 85x32mm - Global Electronics (Caja x 500)</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x500 u.</span><span class="precio">USD 0,95</span></div><div class="precio-row precio-mejor"><span class="cant">x1000 u.</span><span class="precio">USD 0,90 ⭐</span></div><div class="precio-row"><span class="cant">x1000 u.</span><span class="precio">USD 0,87</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1MxH508iAl2HagEPh8UzCQTjMeZ7WjV0f&sz=w400" alt="LLAVSUB-PL-CAMISETA" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">LLAVSUB-PL-CAMISETA</div>
+            <div class="product-name">Llavero Sublimable Plastico Camiseta 65x62mm y 3mm de espesor - Global Electroni...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x500 u.</span><span class="precio">USD 0,63</span></div><div class="precio-row precio-mejor"><span class="cant">x1000 u.</span><span class="precio">USD 0,59 ⭐</span></div><div class="precio-row"><span class="cant">x1000 u.</span><span class="precio">USD 0,57</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=14zYVp0n0SqsmPESJg8GYPVW7iItLEjH8&sz=w400" alt="MATESUB-MSTRAW-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">MATESUB-MSTRAW-W</div>
+            <div class="product-name">Mate Sublimable de Aluminio con Bombilla Metálica Blanco - Global Electronics (C...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 4,66</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 4,36 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 4,19</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1Cj2tX504M1BpSVajtYu44Q1iSt1tLLxe&sz=w400" alt="TERMOSUB-ALU-500ML-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TERMOSUB-ALU-500ML-W</div>
+            <div class="product-name">Termo Sublimable de Aluminio Insulado Blanco 70x240mm de 500cm3 - Global Electro...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 4,99</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 4,72 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 4,55</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1heykS0GsPzIm5yG1I-yUqG8uwNGEvInZ&sz=w400" alt="TERMOSUB-DTEMP-500ML-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TERMOSUB-DTEMP-500ML-W</div>
+            <div class="product-name">Termo Sublimable de Aluminio Insulado Blanco con Display de Temperatura de 500cm...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 4,19</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 3,96 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 3,82</span></div></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1v3xGtwtHZ5b0faSftDPwfJPpr77e_VOw&sz=w400" alt="TUMBLERSUB-ALU-1200ML-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TUMBLERSUB-ALU-1200ML-W</div>
+            <div class="product-name">Vaso Tumbler Sublimable con Tapa y Bombilla Blanco 1200cm3 - Global Electronics ...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=15-RcGZ5tVPR1Dohll2nt0I2FLBqFyi3o&sz=w400" alt="COFMUGSUB-DTEMP-500ML-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">COFMUGSUB-DTEMP-500ML-W</div>
+            <div class="product-name">Vaso Sublimable con Tapa y Display de Temperatura Blanco 500cm3 - Global Electro...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 6,80</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 6,37 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 6,12</span></div></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-CORA-CER-11OZ-WG</div>
+            <div class="product-name">Taza Sublimable de Ceramica Recta con Asa Corazon Blanca Glossy de 11oz 325cm3 -...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-CORA-MAGIC-CER-11OZ-BK</div>
+            <div class="product-name">Taza Sublimable Magica Cambia Color con Temperatura de Ceramica Recta con Asa Co...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 2,18</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 2,05 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,97</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-GLIT-CER-11OZ-GLD</div>
+            <div class="product-name">Taza Sublimable Glitter de Ceramica Recta con Asa de 11oz 325cm3 - Global Electr...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,78</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,68 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,61</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-GLIT-CER-11OZ-SLV</div>
+            <div class="product-name">Taza Sublimable Glitter de Ceramica Recta con Asa de 11oz 325cm3 - Global Electr...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,78</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,68 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,61</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-MAGIC-CER-11OZ-BK</div>
+            <div class="product-name">Taza Sublimable Magica Cambia Color con Temperatura de Ceramica Recta</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,78</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,68 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,61</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-MAGIC-CER-11OZ-BL</div>
+            <div class="product-name">Taza Sublimable Magica Cambia Color con Temperatura de Ceramica Recta</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,78</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,68 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,61</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-MAGIC-CER-11OZ-RD</div>
+            <div class="product-name">Taza Sublimable Magica Cambia Color con Temperatura de Ceramica Recta</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,78</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,68 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,61</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-PRL-CER-11OZ-GLD</div>
+            <div class="product-name">Taza Sublimable Perlada de Ceramica Recta con Asa de 11oz 325cm3 - Global Electr...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,78</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,68 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,61</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-PRL-CER-11OZ-PK</div>
+            <div class="product-name">Taza Sublimable Perlada de Ceramica Recta con Asa de 11oz 325cm3 - Global Electr...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,78</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,68 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,61</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-PRL-CER-11OZ-SLV</div>
+            <div class="product-name">Taza Sublimable Perlada de Ceramica Recta con Asa de 11oz 325cm3 - Global Electr...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,78</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,68 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,61</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">TAZASUB-ST-CER-11OZ-WG</div>
+            <div class="product-name">Taza Sublimable de Ceramica Recta con Asa Blanca Glossy de 11Oz 330cm3 - Global ...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x96 u.</span><span class="precio">USD 1,26</span></div><div class="precio-row precio-mejor"><span class="cant">x192 u.</span><span class="precio">USD 1,19 ⭐</span></div><div class="precio-row"><span class="cant">x192 u.</span><span class="precio">USD 1,15</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1A-IjM3sK-rxFjaR7p3PxYcjoa9BDsA7a&sz=w400" alt="TSHIRTSUB-POLY-2-L-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TSHIRTSUB-POLY-2-L-W</div>
+            <div class="product-name">Remera Sublimable Large Premium de Polyester 200grs Manga Corta Blanca Cuello Al...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 1,66</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 1,55 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 1,48</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1A-IjM3sK-rxFjaR7p3PxYcjoa9BDsA7a&sz=w400" alt="TSHIRTSUB-POLY-2-S-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TSHIRTSUB-POLY-2-S-W</div>
+            <div class="product-name">Remera Sublimable Small Premium de Polyester 200grs Manga Corta Blanca Cuello Al...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 1,66</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 1,55 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 1,48</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1A-IjM3sK-rxFjaR7p3PxYcjoa9BDsA7a&sz=w400" alt="TSHIRTSUB-POLY-2-XXL-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TSHIRTSUB-POLY-2-XXL-W</div>
+            <div class="product-name">Remera Sublimable XXL Premium de Polyester 200grs Manga Corta Blanca Cuello Algo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 1,66</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 1,55 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 1,48</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1A-IjM3sK-rxFjaR7p3PxYcjoa9BDsA7a&sz=w400" alt="TSHIRTSUB-POLY-L-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TSHIRTSUB-POLY-L-W</div>
+            <div class="product-name">Remera Sublimable Large Premium de Polyester 200grs Manga Corta Blanca Cuello St...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 1,49</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 1,39 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 1,33</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1A-IjM3sK-rxFjaR7p3PxYcjoa9BDsA7a&sz=w400" alt="TSHIRTSUB-POLY-S-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TSHIRTSUB-POLY-S-W</div>
+            <div class="product-name">Remera Sublimable Small Premium de Polyester 200grs Manga Corta Blanca Cuello St...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 1,49</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 1,39 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 1,33</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1A-IjM3sK-rxFjaR7p3PxYcjoa9BDsA7a&sz=w400" alt="TSHIRTSUB-POLY-XXL-W" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TSHIRTSUB-POLY-XXL-W</div>
+            <div class="product-name">Remera Sublimable XXL Premium de Polyester 200grs Manga Corta Blanca Cuello Stan...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x50 u.</span><span class="precio">USD 1,49</span></div><div class="precio-row precio-mejor"><span class="cant">x100 u.</span><span class="precio">USD 1,39 ⭐</span></div><div class="precio-row"><span class="cant">x100 u.</span><span class="precio">USD 1,33</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1CDAb_Xz3UwrF26Vzx-5bvNkKyFvfsENg&sz=w400" alt="PVSUB-MDF-ROUND" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PVSUB-MDF-ROUND</div>
+            <div class="product-name">Posavasos Sublimable de Madera MDF 95mm x 4mm espesor - Global Electronics (Caja...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x500 u.</span><span class="precio">USD 0,73</span></div><div class="precio-row precio-mejor"><span class="cant">x1000 u.</span><span class="precio">USD 0,69 ⭐</span></div><div class="precio-row"><span class="cant">x1000 u.</span><span class="precio">USD 0,67</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=15oA7p3wf1yXShzvCVI8sHyBIaorD7FjI&sz=w400" alt="PVSUB-MDF-SQUARE" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PVSUB-MDF-SQUARE</div>
+            <div class="product-name">Posavasos Sublimable de Madera MDF 95mm x 4mm espesor - Global Electronics (Caja...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x500 u.</span><span class="precio">USD 0,73</span></div><div class="precio-row precio-mejor"><span class="cant">x1000 u.</span><span class="precio">USD 0,69 ⭐</span></div><div class="precio-row"><span class="cant">x1000 u.</span><span class="precio">USD 0,67</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1HUUjA-zEGHjaIPxrwve0NNFpefu2CwFO&sz=w400" alt="MPADSUB-ROUND-20" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">MPADSUB-ROUND-20</div>
+            <div class="product-name">Mousepad Sublimable de Goma con Tela 3mm espesor - Global Electronics (Caja x 20...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x200 u.</span><span class="precio">USD 0,64</span></div><div class="precio-row precio-mejor"><span class="cant">x400 u.</span><span class="precio">USD 0,56 ⭐</span></div><div class="precio-row"><span class="cant">x400 u.</span><span class="precio">USD 0,51</span></div></div>
+        </div>
+    </div>
+    <div class="product-card unavailable">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1fqiVAKIXlnbbd2HmHnH4hIp7jWd9Sxei&sz=w400" alt="MPADSUB-SQUARE-20X20" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">MPADSUB-SQUARE-20X20</div>
+            <div class="product-name">Mousepad Sublimable de Goma con Tela 3mm espesor - Global Electronics (Caja x 20...</div>
+            <span class="badge-no">✗ SIN STOCK</span>
+            <div class="precios"></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1k1pZkPanu64UCPqgcG601UceYUJfti-n&sz=w400" alt="RCSUB-CORA-16P" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">RCSUB-CORA-16P</div>
+            <div class="product-name">Rompecabeza Sublimable Corazon 190x190mm de 16 Piezas - Global Electronics (Caja...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x350 u.</span><span class="precio">USD 1,79</span></div><div class="precio-row precio-mejor"><span class="cant">x700 u.</span><span class="precio">USD 1,69 ⭐</span></div><div class="precio-row"><span class="cant">x700 u.</span><span class="precio">USD 1,63</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1fjSJiGj1NH_umAMqxYIRYQzw_5faWXXz&sz=w400" alt="RCSUB-SQUARE-40P" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">RCSUB-SQUARE-40P</div>
+            <div class="product-name">Rompecabeza Sublimable Cuadrado 200x290mm de 40 Piezas - Global Electronics (Caj...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x250 u.</span><span class="precio">USD 1,99</span></div><div class="precio-row precio-mejor"><span class="cant">x500 u.</span><span class="precio">USD 1,88 ⭐</span></div><div class="precio-row"><span class="cant">x500 u.</span><span class="precio">USD 1,81</span></div></div>
+        </div>
+    </div></div>
+    </section>
+    <section class="category-section">
+        <div class="cat-header">
+            <div class="cat-icon">🔧</div>
+            <div>
+                <h2>Accesorios Sublimación</h2>
+                <p class="cat-desc">Herramientas y accesorios para mejorar tus estampados: reglas de centrado, gomas de silicona, telas de teflón.</p>
+            </div>
+            <div class="cat-count">11 disponibles</div>
+        </div>
+        <div class="products-grid">
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1rgqU2_y7foT2C_3Rmzlid9Va3ysAmsCC&sz=w400" alt="TSHIRTGUIDERULE-AIO" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TSHIRTGUIDERULE-AIO</div>
+            <div class="product-name">Regla Guía para Centrar Sublimación de Remeras y más Universal para Adulto</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 12,62</span></div><div class="precio-row precio-mejor"><span class="cant">x20 u.</span><span class="precio">USD 11,84 ⭐</span></div><div class="precio-row"><span class="cant">x20 u.</span><span class="precio">USD 11,36</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">SSRULE-60CM</div>
+            <div class="product-name">Regla Metálica de Acero Inoxidable de 60cm (Metrico y Pulgadas)</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 1,96</span></div><div class="precio-row precio-mejor"><span class="cant">x20 u.</span><span class="precio">USD 1,84 ⭐</span></div><div class="precio-row"><span class="cant">x20 u.</span><span class="precio">USD 1,77</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">GOMASILICON-SUB-30X38</div>
+            <div class="product-name">Goma Siliconada Base Plancha Sublimacion de 30x38 cm</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 17,79</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 16,68 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 16,01</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">GOMASILICON-SUB-40X60</div>
+            <div class="product-name">Goma Siliconada Base Plancha Sublimacion de 40x60 cm</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 22,23</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 20,84 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 20,01</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">RESISTENCIA-TAZA-R11</div>
+            <div class="product-name">Resistencia de Repuesto para Sublimación de Tazas 11oz Rectas Ficha Hembra - Glo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x1 u.</span><span class="precio">USD 22,71</span></div><div class="precio-row precio-mejor"><span class="cant">x2 u.</span><span class="precio">USD 21,45 ⭐</span></div><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 20,69</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">RESISTENCIA-TAZA-C12</div>
+            <div class="product-name">Resistencia de Repuesto para Sublimación de Tazas 12oz Cónicas Ficha Hembra - Gl...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x1 u.</span><span class="precio">USD 24,09</span></div><div class="precio-row precio-mejor"><span class="cant">x2 u.</span><span class="precio">USD 22,75 ⭐</span></div><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 21,95</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">RESISTENCIA-TAZA-C17</div>
+            <div class="product-name">Resistencia de Repuesto para Sublimación de Tazas 17oz Cónicas Ficha Hembra - Gl...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x1 u.</span><span class="precio">USD 25,81</span></div><div class="precio-row precio-mejor"><span class="cant">x2 u.</span><span class="precio">USD 24,38 ⭐</span></div><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 23,52</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">RESISTENCIA-TAZA-R9</div>
+            <div class="product-name">Resistencia de Repuesto para Sublimación de Tazas 9oz Rectas Ficha Hembra - Glob...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x1 u.</span><span class="precio">USD 17,78</span></div><div class="precio-row precio-mejor"><span class="cant">x2 u.</span><span class="precio">USD 16,79 ⭐</span></div><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 16,20</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">RESISTENCIA-TERMO-R30</div>
+            <div class="product-name">Resistencia de Repuesto para Sublimación de Termos y Tazas 30oz Rectas Ficha Hem...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x1 u.</span><span class="precio">USD 25,24</span></div><div class="precio-row precio-mejor"><span class="cant">x2 u.</span><span class="precio">USD 23,83 ⭐</span></div><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 22,99</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1ihBg7RqSc4MyXdxG7Pf8qOO1vDDd7Rmt&sz=w400" alt="TELATEFLON-SUB-30X38" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TELATEFLON-SUB-30X38</div>
+            <div class="product-name">Tela de Teflón para Protección al Sublimar de 30x38 cm</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 3,36</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 3,15 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 3,03</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1rTG5YbkQ8X8IBn_OVNF2P_kgdso65k2S&sz=w400" alt="TELATEFLON-SUB-40X60" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">TELATEFLON-SUB-40X60</div>
+            <div class="product-name">Tela de Teflón para Protección al Sublimar de 40x60 cm</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 4,03</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 3,78 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 3,62</span></div></div>
+        </div>
+    </div></div>
+    </section>
+    <section class="category-section">
+        <div class="cat-header">
+            <div class="cat-icon">📦</div>
+            <div>
+                <h2>Cinta Termica</h2>
+                <p class="cat-desc">Cintas adhesivas resistentes al calor para fijar el papel de sublimación durante el proceso de transferencia.</p>
+            </div>
+            <div class="cat-count">3 disponibles</div>
+        </div>
+        <div class="products-grid">
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">HEATTAPE-10MM</div>
+            <div class="product-name">Cinta Autoadhesiva para Sublimar de 10mm x 30mts - Resistencia: 250° - 20Min</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x15 u.</span><span class="precio">USD 0,27</span></div><div class="precio-row precio-mejor"><span class="cant">x30 u.</span><span class="precio">USD 0,22 ⭐</span></div><div class="precio-row"><span class="cant">x30 u.</span><span class="precio">USD 0,18</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">HEATTAPE-20MM</div>
+            <div class="product-name">Cinta Autoadhesiva para Sublimar de 20mm x 30mts - Resistencia: 250° - 20Min</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x15 u.</span><span class="precio">USD 0,51</span></div><div class="precio-row precio-mejor"><span class="cant">x30 u.</span><span class="precio">USD 0,41 ⭐</span></div><div class="precio-row"><span class="cant">x30 u.</span><span class="precio">USD 0,35</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">HEATTAPE-6MM</div>
+            <div class="product-name">Cinta Autoadhesiva para Sublimar de 6mm x 30mts - Resistencia: 250° - 20Min</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x15 u.</span><span class="precio">USD 0,17</span></div><div class="precio-row precio-mejor"><span class="cant">x30 u.</span><span class="precio">USD 0,13 ⭐</span></div><div class="precio-row"><span class="cant">x30 u.</span><span class="precio">USD 0,11</span></div></div>
+        </div>
+    </div></div>
+    </section>
+    <section class="category-section">
+        <div class="cat-header">
+            <div class="cat-icon">📄</div>
+            <div>
+                <h2>Papel Sublimación</h2>
+                <p class="cat-desc">Papel transfer de alta calidad para sublimación. Disponible en diferentes gramajes, tamaños y formatos en rollo.</p>
+            </div>
+            <div class="cat-count">14 disponibles</div>
+        </div>
+        <div class="products-grid">
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1c5DlGzU1X3BiqXJJjFHMPaAntosBki5O&sz=w400" alt="PAPERM110A4-100" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERM110A4-100</div>
+            <div class="product-name">Papel Mate en resma de 100 hojas A4  APTO SUBLIMACION  (210 x 297 mm.) de 110 Gr...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x30 u.</span><span class="precio">USD 2,70</span></div><div class="precio-row precio-mejor"><span class="cant">x60 u.</span><span class="precio">USD 2,53 ⭐</span></div><div class="precio-row"><span class="cant">x60 u.</span><span class="precio">USD 2,43</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1nVbvR2nsvzM0vB7SSPZuDf-NvjJEHD_A&sz=w400" alt="PAPERSUBLI100A3-20" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI100A3-20</div>
+            <div class="product-name">Papel Sublimación Tricapa Premium 95% Transferencia en resma de 20 hojas A3 (420...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x30 u.</span><span class="precio">USD 2,05</span></div><div class="precio-row precio-mejor"><span class="cant">x60 u.</span><span class="precio">USD 1,92 ⭐</span></div><div class="precio-row"><span class="cant">x60 u.</span><span class="precio">USD 1,84</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1SHtdTNgLA_2dg_Xg9PZ7Un1Rlw1BaWPs&sz=w400" alt="PAPERSUBLI100A4-100" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI100A4-100</div>
+            <div class="product-name">Papel Sublimación Tricapa Premium 95% Transferencia en resma de 100 hojas A4 (21...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x30 u.</span><span class="precio">USD 7,91</span></div><div class="precio-row precio-mejor"><span class="cant">x60 u.</span><span class="precio">USD 7,42 ⭐</span></div><div class="precio-row"><span class="cant">x60 u.</span><span class="precio">USD 7,12</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1m23SxBT5ywycEqbFmYCqYc2A-9ObkWCD&sz=w400" alt="PAPERSUBLI100A4-20" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI100A4-20</div>
+            <div class="product-name">Papel Sublimación Tricapa Premium 95% Transferencia en resma de 20 hojas A4 (210...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x30 u.</span><span class="precio">USD 2,05</span></div><div class="precio-row precio-mejor"><span class="cant">x60 u.</span><span class="precio">USD 1,92 ⭐</span></div><div class="precio-row"><span class="cant">x60 u.</span><span class="precio">USD 1,84</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1ov3HQzyxmu9RRuajIRL1033J1d_c7olf&sz=w400" alt="PAPERSUBLI100ROLL-1100X50M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI100ROLL-1100X50M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 17,23</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 16,15 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 15,50</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=14_tRObWy2ljZpMWjoMvZYQbL0kmfXvfN&sz=w400" alt="PAPERSUBLI100ROLL-1340X50M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI100ROLL-1340X50M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 20,09</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 18,83 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 18,08</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1D4LR0EGghh0kyAtP3nJa48-SFPli0deh&sz=w400" alt="PAPERSUBLI100ROLL-210X100M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI100ROLL-210X100M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 6,30</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 5,90 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 5,67</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1htlq1Yht8GuyI3aN2RlGIz--8s1_tJFo&sz=w400" alt="PAPERSUBLI100ROLL-330X100M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI100ROLL-330X100M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 9,89</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 9,27 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 8,90</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1QbCYHGD5kDq5a9AyIC9adH_DD0HzRh2L&sz=w400" alt="PAPERSUBLI100ROLL-610X50M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI100ROLL-610X50M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 9,14</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 8,57 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 8,23</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1U6e3qppBLEcQw_gYbrXJrNiM89jzRilo&sz=w400" alt="PAPERSUBLI45ROLL-1620X300M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI45ROLL-1620X300M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 85,74</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 80,38 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 77,17</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1_EOeUt6hkv4xYko4eEMqsACA4G8LSEHP&sz=w400" alt="PAPERSUBLI57ROLL-1620X300M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI57ROLL-1620X300M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 116,56</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 109,28 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 104,91</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1OuL24Zhu2F9k6WeQqiGl_2fySioTrSLK&sz=w400" alt="PAPERSUBLI73ROLL-1620X200M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI73ROLL-1620X200M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 97,13</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 91,06 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 87,42</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=1_wi1FC0bDaEGv5gS5ghYj3kWAZWAWi6r&sz=w400" alt="PAPERSUBLI90ROLL-1110X100M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI90ROLL-1110X100M</div>
+            <div class="product-name">Papel Sublimación Coated Tricapa Premium 95% Transferencia Instant Dry en rollo ...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 56,34</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 52,82 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 50,70</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><img src="https://drive.google.com/thumbnail?id=18_LOC9pn-oCZyVKoAM-07hEcZdbUCGNU&sz=w400" alt="PAPERSUBLI90ROLL-1620X100M" onerror="this.src='https://via.placeholder.com/280x200/e8f0fe/1a73e8?text=GLOBAL'"/></div>
+        <div class="product-body">
+            <div class="product-sku">PAPERSUBLI90ROLL-1620X100M</div>
+            <div class="product-name">Papel Sublimación Coaated Tricapa Premium 95% Transferencia Instant Dry en rollo...</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x2 u.</span><span class="precio">USD 58,67</span></div><div class="precio-row precio-mejor"><span class="cant">x4 u.</span><span class="precio">USD 55,00 ⭐</span></div><div class="precio-row"><span class="cant">x4 u.</span><span class="precio">USD 52,80</span></div></div>
+        </div>
+    </div></div>
+    </section>
+    <section class="category-section">
+        <div class="cat-header">
+            <div class="cat-icon">🖨️</div>
+            <div>
+                <h2>Tintas Sublimación</h2>
+                <p class="cat-desc">Tintas de sublimación de alta concentración para impresoras Epson EcoTank. Colores vivos y durables.</p>
+            </div>
+            <div class="cat-count">14 disponibles</div>
+        </div>
+        <div class="products-grid">
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIC100</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 100cm3 Black</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 3,17</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 2,97 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 2,85</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIK100</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 100cm3 Magenta</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 3,17</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 2,97 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 2,85</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLILC100</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 100cm3 Yellow</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 3,17</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 2,97 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 2,85</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIY100</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 100cm3 Cyan</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 3,17</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 2,97 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 2,85</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLILM100</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 100cm3 Magenta Claro</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 3,17</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 2,97 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 2,85</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIM100</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 100cm3 Cyan Claro</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 3,17</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 2,97 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 2,85</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIC250</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 250cm3 Black</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 4,39</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 4,11 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 3,95</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIK250</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 250cm3 Cyan</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 4,39</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 4,11 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 3,95</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIM250</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 250cm3 Yellow</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 4,39</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 4,11 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 3,95</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIY250</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 250cm3 Magenta</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 4,39</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 4,11 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 3,95</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIC1000</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 1000cm3 Black</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 12,88</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 12,17 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 11,74</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIK1000</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 1000cm3 Cyan</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 12,88</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 12,17 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 11,74</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIM1000</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 1000cm3 Magenta</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 12,88</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 12,17 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 11,74</span></div></div>
+        </div>
+    </div>
+    <div class="product-card ">
+        <div class="product-img"><div class="no-img">📷</div></div>
+        <div class="product-body">
+            <div class="product-sku">INKSUBLIY1000</div>
+            <div class="product-name">Botella de Tinta Compatible Sublimación por 1000cm3 Yellow</div>
+            <span class="badge-ok">✓ DISPONIBLE</span>
+            <div class="precios"><div class="precio-row"><span class="cant">x5 u.</span><span class="precio">USD 12,88</span></div><div class="precio-row precio-mejor"><span class="cant">x10 u.</span><span class="precio">USD 12,17 ⭐</span></div><div class="precio-row"><span class="cant">x10 u.</span><span class="precio">USD 11,74</span></div></div>
+        </div>
+    </div></div>
+    </section>
+
+<!-- TIPS -->
+<div class="tips-section">
+  <h2>💡 Tips para mejores resultados</h2>
+  <div class="tips-grid">
+    <div class="tip-card"><div class="tip-ico">🌡️</div><div><h3>Temperatura correcta</h3><p>Cada material tiene su temperatura ideal. Tazas: 190°C, Remeras: 180°C, Gorras: 160°C.</p></div></div>
+    <div class="tip-card"><div class="tip-ico">⏱️</div><div><h3>Tiempo de prensado</h3><p>Respetá los tiempos. Demasiado tiempo puede quemar el material o producir tonos "fantasma".</p></div></div>
+    <div class="tip-card"><div class="tip-ico">📄</div><h3>Papel de calidad</h3><p>Usá siempre papel sublimación de alta gramaje. Evita que la tinta se corra durante el prensado.</p></div></div>
+    <div class="tip-card"><div class="tip-ico">🖨️</div><div><h3>Perfil de color ICC</h3><p>Instalá los perfiles ICC de tus tintas para lograr colores más precisos y consistentes.</p></div></div>
+    <div class="tip-card"><div class="tip-ico">🔧</div><div><h3>Cinta térmica</h3><p>Siempre fijá el papel con cinta térmica para evitar que se mueva y arruine el diseño.</p></div></div>
+    <div class="tip-card"><div class="tip-ico">💧</div><div><h3>Material 100% polyester</h3><p>La sublimación solo funciona en materiales que contengan poliéster o recubrimiento polimérico.</p></div></div>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<footer>
+  <h3>🌐 globalecom.ar</h3>
+  <p>Consultá disponibilidad y precios actualizados en nuestra web</p>
+  <p style="margin-top:10px"><a class="footer-link" href="https://globalecom.ar">globalecom.ar</a></p>
+  <p style="margin-top:20px; font-size:0.75rem; opacity:0.4">Vigencia Mayo 2026 · Precios en USD sin IVA · Sujeto a cambios sin previo aviso</p>
+</footer>
+
+</body>
+</html>
