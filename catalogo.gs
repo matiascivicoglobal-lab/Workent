@@ -83,20 +83,39 @@ function getSheetImages(sheetName) {
 
   if (!needFetch) return result; // Todo en cache, no hacer export
 
-  // Exportar la hoja como HTML — Google embebe imágenes como data URI base64
+  // Exportar la hoja como HTML — Google embebe imágenes como data URI base64.
+  // single=true es obligatorio: sin él Google devuelve un ZIP en vez de HTML.
   try {
     var gid       = sheet.getSheetId();
     var exportUrl = 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID
-      + '/export?format=html&gid=' + gid;
+      + '/export?format=html&single=true&gid=' + gid;
 
     var resp = UrlFetchApp.fetch(exportUrl, {
       headers: {Authorization: 'Bearer ' + token},
-      muteHttpExceptions: true
+      muteHttpExceptions: true,
+      followRedirects: true
     });
 
     if (resp.getResponseCode() !== 200) return result;
 
-    var html = resp.getContentText();
+    // Si la respuesta es ZIP (sin single=true no funciona), descomprimirlo
+    var html;
+    var ct = '';
+    try { ct = resp.getHeaders()['Content-Type'] || ''; } catch(he) {}
+    if (ct.indexOf('zip') !== -1 || ct.indexOf('octet-stream') !== -1) {
+      try {
+        var files = Utilities.unzip(resp.getBlob());
+        for (var fi = 0; fi < files.length; fi++) {
+          if (files[fi].getName().toLowerCase().indexOf('.html') !== -1) {
+            html = files[fi].getDataAsString('UTF-8');
+            break;
+          }
+        }
+      } catch(ze) {}
+    } else {
+      html = resp.getContentText('UTF-8');
+    }
+    if (!html) return result;
 
     // Recorrer fila por fila buscando base64 images
     // Dividir por <tr (cada parte es el contenido de una fila)
