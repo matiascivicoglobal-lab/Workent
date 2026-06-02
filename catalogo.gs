@@ -33,32 +33,109 @@ function getLogoDataUrl() {
 }
 
 // ---------------------------------------------------------------
-// Imágenes de productos — llamado desde el cliente via google.script.run
-// Devuelve {fila: url_o_base64} para todas las imágenes flotantes del sheet.
+// Imágenes de productos — llamado desde el cliente via google.script.run.
+// Usa la Sheets API v4 para leer in-cell images (col J) y las convierte
+// a base64 usando fetchAll en paralelo. Cachea 6 horas por imagen.
 // ---------------------------------------------------------------
 
 function getSheetImages(sheetName) {
-  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
-  if (!sheet) return {};
   var result = {};
+  var token  = ScriptApp.getOAuthToken();
+  var cache  = CacheService.getScriptCache();
+
+  // 1. Sheets API v4: obtener contentUrl de in-cell images en col J
   try {
-    var imgs = sheet.getImages();
-    for (var i = 0; i < imgs.length; i++) {
-      var row = imgs[i].getAnchorCell().getRow();
-      var url = '';
-      // Intenta URL directa primero (si fue insertada por URL)
-      try { url = imgs[i].getUrl() || ''; } catch(e) {}
-      // Si no hay URL, convierte el blob a base64
-      if (!url) {
-        try {
-          var blob = imgs[i].getBlob();
-          var ct   = blob.getContentType() || 'image/jpeg';
-          url = 'data:' + ct + ';base64,' + Utilities.base64Encode(blob.getBytes());
-        } catch(e2) {}
+    var encodedRange = encodeURIComponent(sheetName + '!J:J');
+    var apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + SPREADSHEET_ID
+      + '?includeGridData=true&ranges=' + encodedRange
+      + '&fields=sheets(data(rowData(values(userEnteredValue/imageValue))))';
+
+    var apiResp = UrlFetchApp.fetch(apiUrl, {
+      headers: {Authorization: 'Bearer ' + token},
+      muteHttpExceptions: true
+    });
+
+    if (apiResp.getResponseCode() === 200) {
+      var parsed   = JSON.parse(apiResp.getContentText());
+      var sheetObj = parsed.sheets && parsed.sheets[0];
+      var rowsData = sheetObj && sheetObj.data && sheetObj.data[0] && sheetObj.data[0].rowData || [];
+
+      // Separar filas cacheadas de las que hay que fetchear
+      var toFetch    = [];  // {row: N, url: contentUrl}
+      var cacheKeys  = [];
+
+      for (var ri = 0; ri < rowsData.length; ri++) {
+        var rRow   = rowsData[ri];
+        if (!rRow || !rRow.values || !rRow.values[0]) continue;
+        var imgVal = rRow.values[0].userEnteredValue && rRow.values[0].userEnteredValue.imageValue;
+        if (!imgVal || !imgVal.contentUrl) continue;
+
+        var sheetRow = ri + 1;
+        var cKey     = 'img_' + sheetName.replace(/[^a-z0-9]/gi, '') + '_' + sheetRow;
+        var cached   = cache.get(cKey);
+        if (cached) {
+          result[sheetRow] = cached;
+        } else {
+          toFetch.push({row: sheetRow, url: imgVal.contentUrl, key: cKey});
+        }
       }
-      if (url) result[row] = url;
+
+      // Fetch paralelo de las imágenes no cacheadas
+      if (toFetch.length > 0) {
+        var requests = toFetch.map(function(item) {
+          return {
+            url: item.url,
+            headers: {Authorization: 'Bearer ' + token},
+            muteHttpExceptions: true,
+            followRedirects: true
+          };
+        });
+
+        var responses = UrlFetchApp.fetchAll(requests);
+        for (var fi = 0; fi < responses.length; fi++) {
+          var imgResp = responses[fi];
+          var item    = toFetch[fi];
+          if (imgResp.getResponseCode() === 200) {
+            var bytes  = imgResp.getBlob().getBytes();
+            var ct     = imgResp.getBlob().getContentType() || 'image/jpeg';
+            var dataUrl = 'data:' + ct + ';base64,' + Utilities.base64Encode(bytes);
+            result[item.row] = dataUrl;
+            // Cachear solo si < 90KB (límite de CacheService)
+            if (bytes.length < 90000) {
+              cache.put(item.key, dataUrl, 21600);
+            }
+          } else {
+            // Si el fetch falla, devolver la URL directa como último recurso
+            result[item.row] = item.url;
+          }
+        }
+      }
     }
   } catch(e) {}
+
+  // 2. Fallback: imágenes flotantes (over-grid) si la API no encontró nada
+  if (Object.keys(result).length === 0) {
+    try {
+      var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+      if (sheet) {
+        var imgs = sheet.getImages();
+        for (var i = 0; i < imgs.length; i++) {
+          var row = imgs[i].getAnchorCell().getRow();
+          var url = '';
+          try { url = imgs[i].getUrl() || ''; } catch(eu) {}
+          if (!url) {
+            try {
+              var blob = imgs[i].getBlob();
+              url = 'data:' + (blob.getContentType()||'image/jpeg') + ';base64,'
+                  + Utilities.base64Encode(blob.getBytes());
+            } catch(eb) {}
+          }
+          if (url) result[row] = url;
+        }
+      }
+    } catch(ef) {}
+  }
+
   return result;
 }
 
