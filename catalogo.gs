@@ -34,107 +34,106 @@ function getLogoDataUrl() {
 
 // ---------------------------------------------------------------
 // Imágenes de productos — llamado desde el cliente via google.script.run.
-// Usa la Sheets API v4 para leer in-cell images (col J) y las convierte
-// a base64 usando fetchAll en paralelo. Cachea 6 horas por imagen.
+//
+// Las imágenes están pegadas directamente en las celdas (sin URL, sin Drive).
+// La única forma de accederlas es exportar la hoja como HTML:
+// Google embebe TODAS las imágenes como base64 inline en el export.
+// Parseamos ese HTML, extraemos la imagen de cada fila, y la mapeamos
+// al SKU correspondiente. Resultado se cachea 6 h por imagen.
 // ---------------------------------------------------------------
 
 function getSheetImages(sheetName) {
   var result = {};
   var token  = ScriptApp.getOAuthToken();
   var cache  = CacheService.getScriptCache();
+  var snKey  = sheetName.replace(/[^a-z0-9]/gi, '');
 
-  // 1. Sheets API v4: obtener contentUrl de in-cell images en col J
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+  if (!sheet) return {};
+
+  // Mapa SKU → fila (1-indexed) para correlacionar el HTML con productos
+  var values   = sheet.getDataRange().getValues();
+  var skuToRow = {};
+  for (var vi = 0; vi < values.length; vi++) {
+    var v = values[vi][0];
+    if (v) skuToRow[String(v).trim()] = vi + 1;
+  }
+
+  // Revisar cache: construir lista de claves y verificar de una sola vez
+  var rowKeys = {};   // row → cacheKey
+  var skus    = Object.keys(skuToRow);
+  var allKeys = [];
+  for (var ki = 0; ki < skus.length; ki++) {
+    var row = skuToRow[skus[ki]];
+    var key = 'img_' + snKey + '_' + row;
+    rowKeys[row] = key;
+    allKeys.push(key);
+  }
+
+  var cached    = cache.getAll(allKeys);
+  var needFetch = false;
+  for (var ck = 0; ck < allKeys.length; ck++) {
+    var rowNum = skuToRow[skus[ck]];
+    if (cached[allKeys[ck]]) {
+      result[rowNum] = cached[allKeys[ck]];
+    } else {
+      needFetch = true;
+    }
+  }
+
+  if (!needFetch) return result; // Todo en cache, no hacer export
+
+  // Exportar la hoja como HTML — Google embebe imágenes como data URI base64
   try {
-    var encodedRange = encodeURIComponent(sheetName + '!J:J');
-    var apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + SPREADSHEET_ID
-      + '?includeGridData=true&ranges=' + encodedRange
-      + '&fields=sheets(data(rowData(values(userEnteredValue/imageValue))))';
+    var gid       = sheet.getSheetId();
+    var exportUrl = 'https://docs.google.com/spreadsheets/d/' + SPREADSHEET_ID
+      + '/export?format=html&gid=' + gid;
 
-    var apiResp = UrlFetchApp.fetch(apiUrl, {
+    var resp = UrlFetchApp.fetch(exportUrl, {
       headers: {Authorization: 'Bearer ' + token},
       muteHttpExceptions: true
     });
 
-    if (apiResp.getResponseCode() === 200) {
-      var parsed   = JSON.parse(apiResp.getContentText());
-      var sheetObj = parsed.sheets && parsed.sheets[0];
-      var rowsData = sheetObj && sheetObj.data && sheetObj.data[0] && sheetObj.data[0].rowData || [];
+    if (resp.getResponseCode() !== 200) return result;
 
-      // Separar filas cacheadas de las que hay que fetchear
-      var toFetch    = [];  // {row: N, url: contentUrl}
-      var cacheKeys  = [];
+    var html = resp.getContentText();
 
-      for (var ri = 0; ri < rowsData.length; ri++) {
-        var rRow   = rowsData[ri];
-        if (!rRow || !rRow.values || !rRow.values[0]) continue;
-        var imgVal = rRow.values[0].userEnteredValue && rRow.values[0].userEnteredValue.imageValue;
-        if (!imgVal || !imgVal.contentUrl) continue;
+    // Recorrer fila por fila buscando base64 images
+    // Dividir por <tr (cada parte es el contenido de una fila)
+    var trParts = html.split(/<tr[\s>]/i);
 
-        var sheetRow = ri + 1;
-        var cKey     = 'img_' + sheetName.replace(/[^a-z0-9]/gi, '') + '_' + sheetRow;
-        var cached   = cache.get(cKey);
-        if (cached) {
-          result[sheetRow] = cached;
-        } else {
-          toFetch.push({row: sheetRow, url: imgVal.contentUrl, key: cKey});
-        }
-      }
+    for (var ti = 1; ti < trParts.length; ti++) {
+      var trHtml = trParts[ti];
 
-      // Fetch paralelo de las imágenes no cacheadas
-      if (toFetch.length > 0) {
-        var requests = toFetch.map(function(item) {
-          return {
-            url: item.url,
-            headers: {Authorization: 'Bearer ' + token},
-            muteHttpExceptions: true,
-            followRedirects: true
-          };
-        });
+      // Solo procesar filas que tengan una imagen inline base64
+      var imgMatch = trHtml.match(/src=["'](data:image\/[^"']+)["']/i);
+      if (!imgMatch) continue;
+      var dataUrl = imgMatch[1];
 
-        var responses = UrlFetchApp.fetchAll(requests);
-        for (var fi = 0; fi < responses.length; fi++) {
-          var imgResp = responses[fi];
-          var item    = toFetch[fi];
-          if (imgResp.getResponseCode() === 200) {
-            var bytes  = imgResp.getBlob().getBytes();
-            var ct     = imgResp.getBlob().getContentType() || 'image/jpeg';
-            var dataUrl = 'data:' + ct + ';base64,' + Utilities.base64Encode(bytes);
-            result[item.row] = dataUrl;
-            // Cachear solo si < 90KB (límite de CacheService)
-            if (bytes.length < 90000) {
-              cache.put(item.key, dataUrl, 21600);
-            }
-          } else {
-            // Si el fetch falla, devolver la URL directa como último recurso
-            result[item.row] = item.url;
-          }
-        }
+      // Extraer el texto del primer <td> (columna A = SKU)
+      var firstTdMatch = trHtml.match(/<td[^>]*>([\s\S]*?)<\/td>/i);
+      if (!firstTdMatch) continue;
+
+      var sku = firstTdMatch[1]
+        .replace(/<[^>]+>/g, '')          // quitar tags HTML
+        .replace(/&amp;/g,  '&')
+        .replace(/&lt;/g,   '<')
+        .replace(/&gt;/g,   '>')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&#39;/g,  "'")
+        .trim();
+
+      if (!sku || !skuToRow[sku]) continue;
+
+      var rowNum  = skuToRow[sku];
+      result[rowNum] = dataUrl;
+
+      // Cachear si cabe (CacheService: máx ~100 KB por entrada)
+      if (dataUrl.length < 120000) {
+        cache.put(rowKeys[rowNum], dataUrl, 21600); // 6 horas
       }
     }
   } catch(e) {}
-
-  // 2. Fallback: imágenes flotantes (over-grid) si la API no encontró nada
-  if (Object.keys(result).length === 0) {
-    try {
-      var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
-      if (sheet) {
-        var imgs = sheet.getImages();
-        for (var i = 0; i < imgs.length; i++) {
-          var row = imgs[i].getAnchorCell().getRow();
-          var url = '';
-          try { url = imgs[i].getUrl() || ''; } catch(eu) {}
-          if (!url) {
-            try {
-              var blob = imgs[i].getBlob();
-              url = 'data:' + (blob.getContentType()||'image/jpeg') + ';base64,'
-                  + Utilities.base64Encode(blob.getBytes());
-            } catch(eb) {}
-          }
-          if (url) result[row] = url;
-        }
-      }
-    } catch(ef) {}
-  }
 
   return result;
 }
