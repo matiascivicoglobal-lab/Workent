@@ -96,7 +96,22 @@ function getImgUrl(sku) {
 }
 
 function parseSheet(sheet) {
-  var rows = sheet.getDataRange().getValues();
+  var data = sheet.getDataRange();
+  var rows = data.getValues();
+  var formulas = data.getFormulas();
+
+  // Build row (1-indexed) → image URL from floating over-grid images
+  var rowImgMap = {};
+  try {
+    var imgs = sheet.getImages();
+    for (var ii = 0; ii < imgs.length; ii++) {
+      var r = imgs[ii].getAnchorCell().getRow();
+      var u = '';
+      try { u = imgs[ii].getUrl(); } catch(e) {}
+      if (u) rowImgMap[r] = u;
+    }
+  } catch(e) {}
+
   var products = [], currentCat = '';
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
@@ -109,6 +124,16 @@ function parseSheet(sheet) {
     if (!row[2] || (String(row[2]) !== 'DISPONIBLE' && String(row[2]) !== 'SIN STOCK')) {
       currentCat = cell; continue;
     }
+
+    // Try IMAGE formula in col J (index 9), then floating image
+    var imgFromSheet = '';
+    if (formulas[i] && formulas[i][9]) {
+      var fm = formulas[i][9];
+      var fm_match = fm.match(/IMAGE\(["\']([^"\']+)["\']/i);
+      if (fm_match) imgFromSheet = fm_match[1];
+    }
+    if (!imgFromSheet && rowImgMap[i + 1]) imgFromSheet = rowImgMap[i + 1];
+
     products.push({
       sku: String(row[0]),
       nombre: String(row[1]),
@@ -116,15 +141,26 @@ function parseSheet(sheet) {
       categoria: currentCat || sheet.getName(),
       cant1: String(row[3] || ''), precio1: String(row[4] || ''),
       cant2: String(row[5] || ''), precio2: String(row[6] || ''),
-      cant3: String(row[7] || ''), precio3: String(row[8] || '')
+      cant3: String(row[7] || ''), precio3: String(row[8] || ''),
+      imgFromSheet: imgFromSheet
     });
   }
   return products;
 }
 
+function formatPrice(pr) {
+  if (!pr || pr === '-' || pr === '') return pr;
+  var s = String(pr);
+  var m = s.match(/^([A-Za-z$\s]*)([\d,.]+)(.*)/);
+  if (!m) return pr;
+  var num = parseFloat(m[2].replace(',', '.'));
+  if (isNaN(num)) return pr;
+  return m[1] + num.toFixed(2) + m[3];
+}
+
 function buildCard(p) {
   var avail = p.stock === 'DISPONIBLE';
-  var img = getImgUrl(p.sku);
+  var img = p.imgFromSheet || getImgUrl(p.sku);
   var imgHtml = img
     ? '<img src="' + img + '" alt="' + p.sku + '" onerror="this.parentElement.innerHTML=\'<div class=no-img>📷</div>\'">'
     : '<div class="no-img">📷</div>';
@@ -137,7 +173,7 @@ function buildCard(p) {
     var c = tiers[t][0], pr = tiers[t][1];
     if (pr && pr !== '-' && pr !== '') {
       var cls = t === 1 ? ' price-best' : '';
-      prices += '<div class="price-row' + cls + '"><span>x' + c + ' u.</span><span>' + pr + '</span></div>';
+      prices += '<div class="price-row' + cls + '"><span>x' + c + ' u.</span><span>' + formatPrice(pr) + '</span></div>';
     }
   }
   var nombre = p.nombre.length > 72 ? p.nombre.substring(0, 72) + '…' : p.nombre;
@@ -250,7 +286,7 @@ function getHtml(vigencia, navLinks, sectionsHtml, bannerUrl) {
   + '<style>' + getCSS() + '</style></head><body>'
   
   // NAV
-  + '<nav class="topnav"><div class="nav-logo"><svg viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="25" r="18" fill="white" fill-opacity=".2"/><path d="M22 9C13 9 6 16 6 25s7 16 16 16c4.5 0 8.6-1.9 11.5-4.9L27 32.5A8.5 8.5 0 0122 34c-5 0-9-4-9-9s4-9 9-9c3 0 5.7 1.5 7.3 3.8H22v5h14C36.3 24 36.5 22.5 36.5 21c0-6.6-5.4-12-14.5-12z" fill="white"/><text x="46" y="30" font-family="Nunito,sans-serif" font-weight="900" font-size="22" fill="white">Global</text><text x="46" y="42" font-family="Nunito,sans-serif" font-weight="700" font-size="9" fill="rgba(255,255,255,0.65)" letter-spacing="2">ELECTRONICS</text></svg></div>'
+  + '<nav class="topnav"><div class="nav-logo"><img src="https://drive.google.com/thumbnail?id=1RNGyq8BzBzuo9KbDkelo8XgxcwYVVxn5&sz=w300" alt="Global Electronics"></div>'
   + '<div class="nav-links">' + navLinks + '</div>'
   + '<div class="nav-vigencia">📅 ' + vigencia + '</div></nav>'
   
@@ -280,7 +316,7 @@ function getCSS() {
   + '.topnav{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,#006064,#00BCD4);'
   + 'padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;'
   + 'box-shadow:0 2px 12px rgba(0,0,0,.2)}'
-  + '.nav-logo svg{width:130px;height:auto}'
+  + '.nav-logo img{height:44px;width:auto;display:block}'
   + '.nav-links{display:flex;gap:8px;flex-wrap:wrap;flex:1}'
   + '.nav-link{background:rgba(255,255,255,.15);color:white;text-decoration:none;'
   + 'padding:6px 14px;border-radius:50px;font-size:.78rem;font-weight:700;'
