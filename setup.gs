@@ -456,19 +456,19 @@ var SKU_TO_IMG = {
 
 function setupImages() {
   var props   = PropertiesService.getScriptProperties();
-  var done    = JSON.parse(props.getProperty('img_done') || '{}');
+  // Only store found file IDs (not NOT_FOUND) to stay under 9KB PropertiesService limit
+  var found   = JSON.parse(props.getProperty('img_done') || '{}');
+  var skipped = JSON.parse(props.getProperty('img_skip') || '{}');
   var start   = new Date().getTime();
-  var MAX_MS  = 5 * 60 * 1000; // 5 minutos
+  var MAX_MS  = 5 * 60 * 1000;
 
-  Logger.log('Ya procesados: ' + Object.keys(done).length + ' / ' + Object.keys(SKU_TO_IMG).length);
+  Logger.log('Ya procesados: ' + (Object.keys(found).length + Object.keys(skipped).length) + ' / ' + Object.keys(SKU_TO_IMG).length);
 
-  // Unzip Excel
   Logger.log('Abriendo Excel...');
   var xlsBlob = DriveApp.getFileById(XLSX_FILE_ID).getBlob().setContentType('application/zip');
   Logger.log('Descomprimiendo...');
   var unzipped = Utilities.unzip(xlsBlob);
 
-  // Build media map: filename -> blob
   var mediaMap = {};
   for (var i = 0; i < unzipped.length; i++) {
     var name = unzipped[i].getName();
@@ -483,12 +483,12 @@ function setupImages() {
   var created = 0;
 
   for (var sku in SKU_TO_IMG) {
-    if (done[sku]) continue; // ya procesado en una corrida anterior
+    if (found[sku] || skipped[sku]) continue;
 
     var imgFilename = SKU_TO_IMG[sku];
     var imgBlob = mediaMap[imgFilename];
     if (!imgBlob) {
-      done[sku] = 'NOT_FOUND';
+      skipped[sku] = 1;
       continue;
     }
 
@@ -496,21 +496,20 @@ function setupImages() {
     imgBlob.setName(safeName);
     imgBlob.setContentType('image/png');
     var file = folder.createFile(imgBlob);
-    done[sku] = file.getId();
+    found[sku] = file.getId();
     created++;
 
-    // Guardar progreso y cortar si queda poco tiempo
     if (new Date().getTime() - start > MAX_MS) {
-      props.setProperty('img_done', JSON.stringify(done));
-      Logger.log('Tiempo límite — pausando. Creados esta corrida: ' + created
-        + '. Total: ' + Object.keys(done).length + '. Volvé a ejecutar.');
+      props.setProperty('img_done', JSON.stringify(found));
+      props.setProperty('img_skip', JSON.stringify(skipped));
+      Logger.log('Tiempo límite — pausando. Creados: ' + created + '. Total encontrados: ' + Object.keys(found).length + '. Volvé a ejecutar.');
       return;
     }
   }
 
-  props.setProperty('img_done', JSON.stringify(done));
-  var found = Object.values(done).filter(function(v){return v !== 'NOT_FOUND';}).length;
-  Logger.log('COMPLETO. ' + found + ' imágenes subidas. Ejecutá getImageMapping() para obtener el JSON.');
+  props.setProperty('img_done', JSON.stringify(found));
+  props.setProperty('img_skip', JSON.stringify(skipped));
+  Logger.log('COMPLETO. ' + Object.keys(found).length + ' imágenes subidas, ' + Object.keys(skipped).length + ' no encontradas. Ejecutá getImageMapping().');
 }
 
 function getImageMapping() {
@@ -524,6 +523,6 @@ function getImageMapping() {
 }
 
 function resetSetup() {
-  PropertiesService.getScriptProperties().deleteProperty('img_done');
+  PropertiesService.getScriptProperties().deleteAllProperties();
   Logger.log('Reset OK');
 }
