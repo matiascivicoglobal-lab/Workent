@@ -464,7 +464,7 @@ function setupImages() {
 
   // Unzip Excel
   Logger.log('Abriendo Excel...');
-  var xlsBlob = DriveApp.getFileById(XLSX_FILE_ID).getBlob();
+  var xlsBlob = DriveApp.getFileById(XLSX_FILE_ID).getBlob().setContentType('application/zip');
   Logger.log('Descomprimiendo...');
   var unzipped = Utilities.unzip(xlsBlob);
 
