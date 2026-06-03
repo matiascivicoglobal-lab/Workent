@@ -192,9 +192,7 @@ function formatPrice(pr) {
 
 function buildCard(p, sheetName) {
   var avail   = p.stock === 'DISPONIBLE';
-  var imgHtml = p.imgUrl
-    ? '<img src="' + p.imgUrl + '" alt="' + p.sku + '" loading="lazy" onerror="this.style.display=\'none\'">'
-    : '<img src="" class="lazy-img" data-sheet="' + sheetName + '" data-row="' + p.sheetRow + '" alt="' + p.sku + '">';
+  var imgHtml = '<img src="" class="lazy-img" data-sheet="' + sheetName + '" data-row="' + p.sheetRow + '" alt="' + p.sku + '">';
   var badge  = avail ? '<span class="avail">✓ Disponible</span>' : '<span class="unavail">✗ Sin stock</span>';
   var prices = '';
   var tiers  = [[p.cant1,p.precio1],[p.cant2,p.precio2],[p.cant3,p.precio3]];
