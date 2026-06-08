@@ -374,3 +374,33 @@ function getCSS() {
     + 'footer strong{color:white}'
     + '@media(max-width:600px){.topnav{flex-direction:column;align-items:flex-start}.cards-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}';
 }
+
+// ---------------------------------------------------------------
+// Limpia TODOS los cachés: sku_map + todas las miniaturas drv_FILEID
+// Ejecutar manualmente desde el editor si se actualizaron imágenes en Drive
+// ---------------------------------------------------------------
+function clearAllCaches() {
+  var cache = CacheService.getScriptCache();
+  var fixed = ['sku_map', 'global_logo_b64'];
+  cache.removeAll(fixed);
+
+  // Leer el mapa directamente de Drive (sin caché) para obtener todos los fileIds
+  try {
+    var text    = DriveApp.getFileById(SKU_MAPPING_FILE).getBlob().getDataAsString();
+    var map     = JSON.parse(text);
+    var fileIds = Object.keys(map).map(function(k){ return map[k]; });
+    // Deduplicar
+    var seen = {}, unique = [];
+    for (var i = 0; i < fileIds.length; i++) {
+      if (!seen[fileIds[i]]) { seen[fileIds[i]] = true; unique.push('drv_' + fileIds[i]); }
+    }
+    // removeAll acepta max 1000 keys a la vez
+    var BATCH = 500;
+    for (var b = 0; b < unique.length; b += BATCH) {
+      cache.removeAll(unique.slice(b, b + BATCH));
+    }
+    Logger.log('Cachés eliminados: ' + fixed.length + ' fijos + ' + unique.length + ' imágenes');
+  } catch(e) {
+    Logger.log('clearAllCaches error: ' + e);
+  }
+}
