@@ -13,7 +13,7 @@ from google_auth_httplib2 import AuthorizedHttp
 
 from config import get_service_account_credentials
 
-SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 # MIME types de exportación para archivos nativos de Google
 EXPORT_MIME = {
