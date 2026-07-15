@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Promo Papeles Global Electronics</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1080px;
+    background: #0b1a20;
+    font-family: Nunito, sans-serif;
+    color: white;
+  }
+
+  .wrapper {
+    width: 1080px;
+    min-height: 1350px;
+    background: linear-gradient(160deg, #062830 0%, #0b1f27 40%, #071520 100%);
+    padding: 60px 56px 70px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* decorative blobs */
+  .blob1 {
+    position: absolute; top: -120px; right: -120px;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,188,212,.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .blob2 {
+    position: absolute; bottom: 100px; left: -150px;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,150,136,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 44px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .brand-icon {
+    width: 64px; height: 64px; border-radius: 18px;
+    background: linear-gradient(135deg, #00BCD4, #006064);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+  }
+  .brand-name { font-size: 1.15rem; font-weight: 900; color: white; }
+  .brand-sub  { font-size: .75rem; color: rgba(255,255,255,.5); letter-spacing: 2px; text-transform: uppercase; }
+
+  .badge-nuevo {
+    background: linear-gradient(135deg, #00BCD4, #009688);
+    padding: 10px 26px; border-radius: 50px;
+    font-size: .85rem; font-weight: 900; letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* hero */
+  .hero-title {
+    font-size: 3.4rem; font-weight: 900; line-height: 1.05;
+    margin-bottom: 14px;
+  }
+  .hero-title em {
+    font-style: normal;
+    background: linear-gradient(90deg, #00BCD4, #4DD0E1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 1.05rem; color: rgba(255,255,255,.65); margin-bottom: 44px;
+    max-width: 640px; line-height: 1.6;
+  }
+
+  /* divider */
+  .divider {
+    height: 2px;
+    background: linear-gradient(90deg, #00BCD4, transparent);
+    margin-bottom: 40px;
+    border-radius: 2px;
+  }
+
+  /* grupos */
+  .grupo { margin-bottom: 34px; }
+  .grupo-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .grupo-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .grupo-title {
+    font-size: 1rem; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: #4DD0E1;
+  }
+
+  /* pills grid */
+  .pills {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .pill {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(0,188,212,.25);
+    border-radius: 50px;
+    padding: 7px 16px;
+    font-size: .8rem; font-weight: 700;
+    color: rgba(255,255,255,.85);
+    white-space: nowrap;
+  }
+  .pill.holo {
+    background: linear-gradient(90deg, rgba(76,190,212,.15), rgba(156,39,176,.15));
+    border-color: rgba(156,39,176,.35);
+    color: #E1BEE7;
+  }
+  .pill.kraft {
+    background: rgba(141,110,99,.2);
+    border-color: rgba(141,110,99,.4);
+    color: #FFCCBC;
+  }
+  .pill.special {
+    background: rgba(255,193,7,.08);
+    border-color: rgba(255,193,7,.3);
+    color: #FFF9C4;
+  }
+
+  /* footer */
+  .footer {
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-text { font-size: .82rem; color: rgba(255,255,255,.4); }
+  .footer-cta {
+    background: linear-gradient(135deg, #00BCD4, #006064);
+    padding: 12px 28px; border-radius: 50px;
+    font-size: .85rem; font-weight: 900;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="blob1"></div>
+  <div class="blob2"></div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">🖨️</div>
+      <div>
+        <div class="brand-name">Global Electronics</div>
+        <div class="brand-sub">globalecom.ar</div>
+      </div>
+    </div>
+    <div class="badge-nuevo">✦ Nuevos Ingresos</div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero-title">Papeles<br><em>Premium</em><br>disponibles</div>
+  <div class="hero-sub">Ampliamos nuestro catálogo de papeles especiales. Matte, Glossy, Holográficos, Kraft y mucho más — todos disponibles para entrega inmediata.</div>
+
+  <div class="divider"></div>
+
+  <!-- HOLOGRÁFICOS -->
+  <div class="grupo">
+    <div class="grupo-header">
+      <div class="grupo-icon" style="background:linear-gradient(135deg,#7B1FA2,#4A148C)">✨</div>
+      <div class="grupo-title">Holográficos A4 · x100 u.</div>
+    </div>
+    <div class="pills">
+      <div class="pill holo">💧 Drops</div>
+      <div class="pill holo">❄️ Snow</div>
+      <div class="pill holo">💜 Love</div>
+      <div class="pill holo">🎲 Mix · x18</div>
+      <div class="pill holo">🐍 Snake</div>
+      <div class="pill holo">⬛ Square</div>
+    </div>
+  </div>
+
+  <!-- MATTE -->
+  <div class="grupo">
+    <div class="grupo-header">
+      <div class="grupo-icon" style="background:linear-gradient(135deg,#00ACC1,#00838F)">📄</div>
+      <div class="grupo-title">Matte · A3 & A4</div>
+    </div>
+    <div class="pills">
+      <div class="pill">110g A3 · x20</div>
+      <div class="pill">150g A4 · x20</div>
+      <div class="pill">180g A3 · x100</div>
+      <div class="pill">180g A4 · x20</div>
+      <div class="pill">210g A4 · x20</div>
+      <div class="pill">210g A4 · x100</div>
+      <div class="pill">240g A3 · x100</div>
+      <div class="pill">240g A4 · x20</div>
+    </div>
+  </div>
+
+  <!-- KRAFT -->
+  <div class="grupo">
+    <div class="grupo-header">
+      <div class="grupo-icon" style="background:linear-gradient(135deg,#8D6E63,#5D4037)">📦</div>
+      <div class="grupo-title">Kraft · A3 & A4</div>
+    </div>
+    <div class="pills">
+      <div class="pill kraft">125g A4 · x20</div>
+      <div class="pill kraft">180g A3 · x100</div>
+      <div class="pill kraft">200g A4 · x20</div>
+    </div>
+  </div>
+
+  <!-- GLOSSY & LUSTER -->
+  <div class="grupo">
+    <div class="grupo-header">
+      <div class="grupo-icon" style="background:linear-gradient(135deg,#1976D2,#0D47A1)">✦</div>
+      <div class="grupo-title">Glossy & Luster</div>
+    </div>
+    <div class="pills">
+      <div class="pill">Glossy 200g A3 · x20</div>
+      <div class="pill">Luster 260g A4 · x50</div>
+    </div>
+  </div>
+
+  <!-- ESPECIALES -->
+  <div class="grupo">
+    <div class="grupo-header">
+      <div class="grupo-icon" style="background:linear-gradient(135deg,#F57F17,#E65100)">⚡</div>
+      <div class="grupo-title">Especiales</div>
+    </div>
+    <div class="pills">
+      <div class="pill special">🪵 Art Leather 160g A3 · x100</div>
+      <div class="pill special">🪵 Art Leather 160g A4 · x20</div>
+      <div class="pill special">🔍 Transparente PET RC 120g A3 · x10</div>
+      <div class="pill special">↔️ Doble Faz Matte 220g A4 · x20</div>
+      <div class="pill special">🧲 Magnético 640g A4 · x10</div>
+      <div class="pill special">🖊️ Tattoo A4 · x10</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-text">Precios en USD sin IVA · Sujeto a disponibilidad<br>globalecom.ar · Julio 2026</div>
+    <div class="footer-cta">📩 Consultá precios</div>
+  </div>
+</div>
+</body>
+</html>
