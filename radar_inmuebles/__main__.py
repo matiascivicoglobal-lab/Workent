@@ -11,6 +11,7 @@
       ... --canal telegram                probá otro canal sin tocar la config
   python -m radar_inmuebles login-facebook    abre el navegador para iniciar sesión
   python -m radar_inmuebles telegram-chatid   encuentra tu chat_id y lo guarda
+  python -m radar_inmuebles guardar-token --token XXX   guarda el token en el .env
 """
 
 from __future__ import annotations
@@ -282,6 +283,29 @@ def cmd_login_facebook(args, cfg) -> int:
     return 0
 
 
+def cmd_guardar_token(args, cfg) -> int:
+    """Escribe el token de Telegram en el .env, sin pasar por el Bloc de notas."""
+    from .ajustes import RAIZ
+    from .telegram_alta import enmascarar, guardar_clave
+
+    token = (args.token or "").strip().strip('"').strip("'")
+    if not token:
+        print("\n  ✗ Falta el token. Usalo así:\n"
+              "    python -m radar_inmuebles guardar-token --token 123456:AAH...\n")
+        return 1
+    if ":" not in token or not token.split(":", 1)[0].isdigit():
+        print(f"\n  ✗ '{enmascarar(token)}' no parece un token de Telegram.\n"
+              "    Tiene que ser números, dos puntos, y letras. Ejemplo:\n"
+              "      123456789:AAHxxxxxxxxxxxxxxxxxxxxxxxx\n")
+        return 1
+
+    ruta = RAIZ / ".env"
+    guardar_clave(ruta, "TELEGRAM_TOKEN", token)
+    print(f"\n  ✓ Token guardado en {ruta}")
+    print(f"    {enmascarar(token)}\n")
+    return 0
+
+
 def cmd_telegram_chatid(args, cfg) -> int:
     """Encuentra el chat_id escuchando los mensajes que le mandaste al bot."""
     from .ajustes import RAIZ
@@ -374,6 +398,7 @@ COMANDOS = {
     "resumen": cmd_resumen,
     "login-facebook": cmd_login_facebook,
     "telegram-chatid": cmd_telegram_chatid,
+    "guardar-token": cmd_guardar_token,
     "demo": cmd_demo,
 }
 
@@ -394,6 +419,7 @@ def main(argv=None) -> int:
                         "| whatsapp:cloud | whatsapp:callmebot")
     p.add_argument("--dias", type=int,
                    help="resumen: cuántos días hacia atrás mirar (default 7)")
+    p.add_argument("--token", help="guardar-token: el token que te dio @BotFather")
     p.add_argument("--guardar", action="store_true",
                    help="telegram-chatid: escribe el chat_id en el .env")
     p.add_argument("-v", "--verbose", action="store_true")

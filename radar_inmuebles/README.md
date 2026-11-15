@@ -370,6 +370,10 @@ PATH"*, si no el instalador no lo va a encontrar.)
 para Zonaprop. Al final te abre el Bloc de notas: pegá ahí tu token de
 Telegram en la línea `TELEGRAM_TOKEN=` y guardá con Ctrl+S.
 
+> Si preferís no pelear con el Bloc de notas, cerralo y usá
+> **`configurar-token.bat`**: te pide el token, lo valida y lo guarda bien.
+> Ojo con las líneas que empiezan con `#`: son comentarios y se ignoran.
+
 **4. Escribile "hola" a tu bot** en Telegram. Sin esto el siguiente paso no
 puede encontrar tu chat.
 
@@ -384,7 +388,9 @@ Los otros scripts:
 
 | Archivo | Para qué |
 |---|---|
+| `configurar-token.bat` | Guarda el token de Telegram sin usar el Bloc de notas |
 | `una-pasada.bat` | Una sola búsqueda y cierra, para probar |
+| `diagnostico.bat` | Si falla la instalación: revisa red, proxy y DNS |
 | `login-facebook.bat` | Iniciás sesión en Facebook una vez, para Marketplace |
 | `arrancar-con-windows.bat` | El radar arranca solo al prender la compu |
 
@@ -500,6 +506,30 @@ aberturas). Si solo vas a pintar y cambiar pisos, poné 150.
 
 ---
 
+## Si algo falla
+
+**`pip` no puede descargar nada (`WinError 10061`, `Max retries exceeded`).**
+Probá `diagnostico.bat`. Si `files.pythonhosted.org` resuelve a una dirección
+`127.x.x.x`, tu proveedor de internet está bloqueando PyPI con un *walled
+garden* (pasa con Telefónica/Movistar). Se arregla cambiando el DNS:
+
+```powershell
+# PowerShell como administrador
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 1.1.1.1,8.8.8.8
+ipconfig /flushdns
+```
+
+**Dice que falta `TELEGRAM_TOKEN` aunque lo pegaste.** La línea del `.env`
+probablemente quedó comentada con `#`. Usá `configurar-token.bat`, que lo
+escribe bien.
+
+**`telegram-chatid` no encuentra mensajes.** Escribile al bot desde Telegram
+y volvé a correrlo. Telegram descarta los mensajes pendientes a las 24 h.
+
+**Una fuente devuelve 0 avisos.** Corré `verificar`. Si una sola falla,
+seguramente cambió la URL de búsqueda del portal: se ajusta desde
+`config.yaml` con `url_template`, sin tocar código.
+
 ## Tests
 
 ```bash
@@ -507,7 +537,7 @@ cd Workent
 python -m unittest discover -s radar_inmuebles/tests -t . -p "test_*.py"
 ```
 
-132 tests, todos offline: parseo de precios argentinos, medianas robustas,
+137 tests, todos offline: parseo de precios argentinos, medianas robustas,
 scoring, detección de bajas de precio, dedupe entre portales, armado del mensaje
 y el pipeline completo de punta a punta con una fuente falsa.
 

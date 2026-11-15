@@ -2,7 +2,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from radar_inmuebles.telegram_alta import enmascarar, extraer_chats, guardar_en_env
+from radar_inmuebles.telegram_alta import (enmascarar, extraer_chats,
+                                           guardar_clave, guardar_en_env)
 
 # Token de mentira, con la misma forma que los de BotFather.
 # Nunca pongas el token real en un test: este archivo sí se sube a git.
@@ -101,6 +102,56 @@ class TestGuardarEnEnv(unittest.TestCase):
     def test_chat_id_negativo_de_grupo(self):
         guardar_en_env(self.ruta, -1001234567890)
         self.assertIn("TELEGRAM_CHAT_ID=-1001234567890", self.ruta.read_text())
+
+
+class TestGuardarClave(unittest.TestCase):
+    """El caso que rompió la instalación: la línea venía comentada."""
+
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.ruta = Path(self.dir.name) / ".env"
+
+    def tearDown(self):
+        self.dir.cleanup()
+
+    def test_descomenta_la_linea(self):
+        self.ruta.write_text("# TELEGRAM_TOKEN=\nOTRA=1\n")
+        guardar_clave(self.ruta, "TELEGRAM_TOKEN", TOKEN_FALSO)
+        texto = self.ruta.read_text()
+        self.assertIn(f"TELEGRAM_TOKEN={TOKEN_FALSO}", texto)
+        self.assertNotIn("# TELEGRAM_TOKEN", texto)
+        self.assertIn("OTRA=1", texto)
+
+    def test_borra_duplicados(self):
+        self.ruta.write_text("# TELEGRAM_TOKEN=\nTELEGRAM_TOKEN=viejo\nOTRA=1\n")
+        guardar_clave(self.ruta, "TELEGRAM_TOKEN", "nuevo")
+        texto = self.ruta.read_text()
+        self.assertEqual(texto.count("TELEGRAM_TOKEN"), 1)
+        self.assertIn("TELEGRAM_TOKEN=nuevo", texto)
+        self.assertNotIn("viejo", texto)
+        self.assertIn("OTRA=1", texto)
+
+    def test_respeta_claves_con_prefijo_parecido(self):
+        self.ruta.write_text("TELEGRAM_TOKEN_VIEJO=x\nTELEGRAM_TOKEN=y\n")
+        guardar_clave(self.ruta, "TELEGRAM_TOKEN", "z")
+        texto = self.ruta.read_text()
+        self.assertIn("TELEGRAM_TOKEN_VIEJO=x", texto)
+        self.assertIn("TELEGRAM_TOKEN=z", texto)
+
+    def test_agrega_si_no_estaba(self):
+        self.ruta.write_text("OTRA=1\n")
+        guardar_clave(self.ruta, "TELEGRAM_TOKEN", "abc")
+        self.assertIn("TELEGRAM_TOKEN=abc", self.ruta.read_text())
+
+    def test_el_env_de_ejemplo_no_trae_telegram_comentado(self):
+        """Si viene comentado, el usuario pega el token y no toma efecto."""
+        from radar_inmuebles.ajustes import RAIZ
+        lineas = (RAIZ / ".env.example").read_text(encoding="utf-8").splitlines()
+        for clave in ("TELEGRAM_TOKEN", "TELEGRAM_CHAT_ID"):
+            activas = [l for l in lineas
+                       if l.strip().startswith(f"{clave}=")]
+            with self.subTest(clave=clave):
+                self.assertTrue(activas, f"{clave} tiene que estar sin comentar")
 
 
 if __name__ == "__main__":

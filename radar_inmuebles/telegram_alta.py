@@ -66,16 +66,41 @@ def chats_del_bot(token: str) -> tuple[list[dict], str]:
     return extraer_chats(datos), ""
 
 
-def guardar_en_env(ruta: Path, chat_id) -> bool:
-    """Escribe TELEGRAM_CHAT_ID en el .env sin tocar el resto."""
+def guardar_clave(ruta: Path, clave: str, valor) -> bool:
+    """Escribe `clave=valor` en un .env sin tocar el resto del archivo.
+
+    Reemplaza también la versión comentada (`# CLAVE=`), que es la trampa
+    clásica: pegás el valor en una línea que empieza con # y no toma efecto.
+    """
+    linea = f"{clave}={valor}"
     if not ruta.exists():
-        ruta.write_text(f"TELEGRAM_CHAT_ID={chat_id}\n", encoding="utf-8")
+        ruta.write_text(linea + "\n", encoding="utf-8")
         return True
+
+    patron = re.compile(rf"^\s*#?\s*{re.escape(clave)}\s*=.*$", flags=re.M)
     texto = ruta.read_text(encoding="utf-8")
-    linea = f"TELEGRAM_CHAT_ID={chat_id}"
-    if re.search(r"^\s*TELEGRAM_CHAT_ID\s*=.*$", texto, flags=re.M):
-        texto = re.sub(r"^\s*TELEGRAM_CHAT_ID\s*=.*$", linea, texto, count=1, flags=re.M)
+    if patron.search(texto):
+        # La primera aparición se reemplaza; las demás (duplicados o
+        # comentadas) se eliminan, para que no quede una pisando a la otra.
+        reemplazadas = {"hecho": False}
+
+        def _sub(_m):
+            if reemplazadas["hecho"]:
+                return "\x00BORRAR\x00"
+            reemplazadas["hecho"] = True
+            return linea
+
+        texto = patron.sub(_sub, texto)
+        texto = "\n".join(l for l in texto.splitlines() if l != "\x00BORRAR\x00")
+        if not texto.endswith("\n"):
+            texto += "\n"
     else:
         texto = texto.rstrip("\n") + f"\n{linea}\n"
+
     ruta.write_text(texto, encoding="utf-8")
     return True
+
+
+def guardar_en_env(ruta: Path, chat_id) -> bool:
+    """Atajo histórico: guarda el chat_id."""
+    return guardar_clave(ruta, "TELEGRAM_CHAT_ID", chat_id)
