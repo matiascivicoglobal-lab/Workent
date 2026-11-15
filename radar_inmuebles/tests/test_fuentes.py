@@ -4,12 +4,12 @@ import json
 import unittest
 from pathlib import Path
 
-from radar_inmuebles.ajustes import cargar
 from radar_inmuebles.fuentes.argenprop import Argenprop
 from radar_inmuebles.fuentes.comun import datos_desde_texto, buscar_avisos_json
 from radar_inmuebles.fuentes.mercadolibre import MercadoLibre
 from radar_inmuebles.fuentes.properati import Properati, _parece_aviso
 from radar_inmuebles.fuentes.zonaprop import Zonaprop
+from radar_inmuebles.tests import cfg_test
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -56,7 +56,7 @@ class TestDatosDesdeTexto(unittest.TestCase):
 
 class TestArgenprop(unittest.TestCase):
     def setUp(self):
-        self.cfg = cargar(recargar=True)
+        self.cfg = cfg_test()
         self.fuente = Argenprop(_ClienteFalso(leer("argenprop_listado.html")), self.cfg)
 
     def test_parsea_el_listado(self):
@@ -98,7 +98,7 @@ class TestArgenprop(unittest.TestCase):
 
 class TestZonaprop(unittest.TestCase):
     def setUp(self):
-        self.cfg = cargar(recargar=True)
+        self.cfg = cfg_test()
         self.fuente = Zonaprop(_ClienteFalso(), self.cfg)
 
     def test_parsea_tarjetas_data_qa(self):
@@ -129,7 +129,7 @@ class TestZonaprop(unittest.TestCase):
 
 class TestProperati(unittest.TestCase):
     def setUp(self):
-        self.cfg = cargar(recargar=True)
+        self.cfg = cfg_test()
         self.fuente = Properati(_ClienteFalso(leer("properati_listado.html")), self.cfg)
 
     def test_encuentra_los_avisos_en_el_json(self):
@@ -154,7 +154,7 @@ class TestProperati(unittest.TestCase):
 
 class TestMercadoLibre(unittest.TestCase):
     def setUp(self):
-        self.cfg = cargar(recargar=True)
+        self.cfg = cfg_test()
         self.datos = json.loads(leer("mercadolibre_busqueda.json"))
         self.fuente = MercadoLibre(_ClienteFalso(json_datos=self.datos), self.cfg)
 

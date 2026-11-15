@@ -277,6 +277,13 @@ class Almacen:
                 "VALUES (?, ?, ?, ?, ?)",
                 (ahora().isoformat(), fuente, hallados, nuevos, error))
 
+    def ultima_corrida(self, fuente: str):
+        """Cuándo corrió por última vez una fuente (para limitar su frecuencia)."""
+        f = self.con.execute(
+            "SELECT ts FROM corridas WHERE fuente = ? ORDER BY ts DESC LIMIT 1",
+            (fuente,)).fetchone()
+        return f["ts"] if f else None
+
     def resumen(self) -> dict:
         c = self.con.execute(
             "SELECT COUNT(*) n, SUM(activo) activos FROM avisos").fetchone()

@@ -1,9 +1,9 @@
 import unittest
 
-from radar_inmuebles.ajustes import cargar
 from radar_inmuebles.modelo import Aviso
 from radar_inmuebles.scoring import Evaluador, pasa_filtros_basicos
 from radar_inmuebles.tasacion import Referencia
+from radar_inmuebles.tests import cfg_test
 
 
 class _Tasador:
@@ -27,7 +27,7 @@ def _aviso(precio=100000.0, m2=70.0, descripcion="", ambientes=3, **kw):
 
 class TestEvaluador(unittest.TestCase):
     def setUp(self):
-        self.cfg = cargar(recargar=True)
+        self.cfg = cfg_test()
         self.ev = Evaluador(_Tasador(), self.cfg)
 
     # -- descuento ------------------------------------------------------
@@ -127,7 +127,7 @@ class TestEvaluador(unittest.TestCase):
 
 class TestFiltrosBasicos(unittest.TestCase):
     def setUp(self):
-        self.cfg = cargar(recargar=True)
+        self.cfg = cfg_test()
 
     def test_pasa_lo_buscado(self):
         self.assertEqual(pasa_filtros_basicos(_aviso(), self.cfg), "")

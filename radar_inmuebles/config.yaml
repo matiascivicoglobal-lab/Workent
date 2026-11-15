@@ -9,9 +9,8 @@ busqueda:
   barrios: [caballito, villa luro, liniers]
   ambientes_min: 3
   ambientes_max: 3               # poné 4 si querés incluir 3 y 4 ambientes
-  # === AJUSTÁ ESTO A TU PRESUPUESTO REAL ===
-  precio_usd_min: 40000          # debajo de esto casi siempre es error o cochera
-  precio_usd_max: 160000
+  precio_usd_min: 35000          # debajo de esto casi siempre es error o cochera
+  precio_usd_max: 80000          # tu techo de compra
   m2_min: 45
   m2_max: 150
   excluir_palabras:              # si aparecen en el título/descripción, se descarta
@@ -26,8 +25,8 @@ busqueda:
 
 # --- Qué se considera oportunidad -----------------------------------------
 oportunidad:
-  descuento_minimo: 0.18         # 18% por debajo de la mediana de la zona
-  puntaje_minimo: 55             # 0-100, ver scoring.py
+  descuento_minimo: 0.15         # 15% por debajo de la mediana de la zona
+  puntaje_minimo: 50             # 0-100, ver scoring.py
   descuento_sospechoso: 0.45     # más que esto => se avisa igual pero marcado "verificar".
                                  # Un 3 amb a reciclar real suele estar 20-35% abajo;
                                  # 50%+ casi siempre es error de carga o traba legal.
@@ -50,7 +49,9 @@ fuentes:
   properati:      {activa: true,  navegador: false}
   remax:          {activa: true,  navegador: false}
   zonaprop:       {activa: true,  navegador: true}   # requiere Playwright
-  facebook:       {activa: false, navegador: true}   # ver README: opt-in, usa tu sesión
+  # Facebook usa tu sesión iniciada. cada_minutos lo espacia para bajar el
+  # riesgo de que Facebook te marque la cuenta. No lo bajes de 60.
+  facebook:       {activa: true,  navegador: true, cada_minutos: 90}
 
 scraping:
   paginas_por_barrio: 3          # ~20-30 avisos por página

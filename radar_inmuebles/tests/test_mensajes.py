@@ -1,10 +1,10 @@
 import unittest
 
-from radar_inmuebles.ajustes import cargar
 from radar_inmuebles.mensajes import alerta, recortar, resumen_diario
 from radar_inmuebles.modelo import Aviso
 from radar_inmuebles.scoring import Evaluador
 from radar_inmuebles.tasacion import Referencia
+from radar_inmuebles.tests import cfg_test
 
 
 class _Tasador:
@@ -14,7 +14,7 @@ class _Tasador:
 
 class TestAlerta(unittest.TestCase):
     def setUp(self):
-        cfg = cargar(recargar=True)
+        cfg = cfg_test()
         aviso = Aviso(fuente="zonaprop", id_externo="1",
                       url="https://www.zonaprop.com.ar/x-1.html",
                       titulo="3 ambientes a reciclar", barrio="Caballito",
@@ -43,7 +43,7 @@ class TestAlerta(unittest.TestCase):
         self.assertLess(len(self.texto), 1600)
 
     def test_avisa_cuando_es_sospechoso(self):
-        cfg = cargar(recargar=True)
+        cfg = cfg_test()
         aviso = Aviso(fuente="x", id_externo="2", url="http://y", barrio="Caballito",
                       precio_usd=30000.0, m2_totales=70.0, ambientes=3)
         ev = Evaluador(_Tasador(), cfg).evaluar(aviso)

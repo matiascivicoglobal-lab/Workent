@@ -6,10 +6,10 @@ from pathlib import Path
 from unittest import mock
 
 from radar_inmuebles import radar as modulo_radar
-from radar_inmuebles.ajustes import cargar
 from radar_inmuebles.fuentes.base import Fuente
 from radar_inmuebles.modelo import Aviso
 from radar_inmuebles.notificadores.base import Notificador
+from radar_inmuebles.tests import cfg_test
 
 
 class _FuenteFalsa(Fuente):
@@ -45,7 +45,7 @@ def _aviso(id_externo, precio, m2=70.0, barrio="Caballito", desc="", amb=3):
 class TestPipeline(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.TemporaryDirectory()
-        self.cfg = cargar(recargar=True)
+        self.cfg = cfg_test()
         self.cfg.datos["salida"]["db"] = str(Path(self.dir.name) / "t.sqlite3")
         self.cfg.datos["fuentes"] = {"falsa": {"activa": True, "navegador": False}}
         self.cfg.datos["scraping"]["enriquecer_candidatos"] = False
@@ -135,6 +135,19 @@ class TestPipeline(unittest.TestCase):
         ref = radar.tasador.referencia("caballito")
         self.assertEqual(ref.origen, "propia")
         self.assertAlmostEqual(ref.mediana, 2000, delta=120)
+
+    def test_fuente_espaciada_se_saltea(self):
+        # Facebook se configura con cada_minutos para no consultarlo seguido.
+        self.cfg.datos["fuentes"]["falsa"]["cada_minutos"] = 90
+        _, res1 = self._correr()
+        self.assertEqual(res1.revisados, 32)
+        _, res2 = self._correr()
+        self.assertEqual(res2.revisados, 0, "no debería volver a consultarla tan pronto")
+
+    def test_sin_cada_minutos_consulta_siempre(self):
+        _, res1 = self._correr()
+        _, res2 = self._correr()
+        self.assertEqual(res2.revisados, 32)
 
     def test_sin_enviar_no_manda_nada(self):
         r = modulo_radar.Radar(self.cfg, enviar=False)

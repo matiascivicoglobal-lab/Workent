@@ -1,0 +1,60 @@
+# Configuración FIJA para los tests. No la toques al ajustar tu búsqueda:
+# los tests tienen que seguir pasando aunque cambies config.yaml.
+busqueda:
+  operacion: venta
+  tipos: [departamento, ph]
+  barrios: [caballito, villa luro, liniers]
+  ambientes_min: 3
+  ambientes_max: 3
+  precio_usd_min: 40000
+  precio_usd_max: 250000
+  m2_min: 45
+  m2_max: 150
+  excluir_palabras: ["nuda propiedad", "usufructo", "en pozo", "a estrenar", "cochera"]
+
+oportunidad:
+  descuento_minimo: 0.18
+  puntaje_minimo: 55
+  descuento_sospechoso: 0.60
+  costo_reforma_usd_m2: 400
+  costos_compra_pct: 0.06
+  costos_venta_pct: 0.04
+  muestra_minima: 20
+
+valores_referencia:
+  caballito: 2250
+  "villa luro": 1750
+  liniers: 1550
+
+fuentes:
+  mercadolibre: {activa: true, navegador: false}
+  argenprop:    {activa: true, navegador: false}
+
+scraping:
+  paginas_por_barrio: 3
+  demora_entre_pedidos: 0
+  timeout: 5
+  reintentos: 1
+  enriquecer_candidatos: false
+  max_enriquecer: 5
+
+alertas:
+  destino: consola
+  proveedor_whatsapp: callmebot
+  telefono: "+5491123549925"
+  max_por_corrida: 6
+  reenviar_si_baja_precio: true
+  baja_precio_minima: 0.04
+  resumen_diario: false
+  hora_resumen: 20
+
+monitoreo:
+  intervalo_minutos: 45
+  horario_activo: [0, 24]
+  cotizacion: manual
+  usd_ars_manual: 1450
+
+salida:
+  db: datos/test.sqlite3
+  reporte_html: datos/test.html
+  exportar_sheets: false

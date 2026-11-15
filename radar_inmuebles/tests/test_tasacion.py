@@ -2,17 +2,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from radar_inmuebles.ajustes import cargar
 from radar_inmuebles.almacen import Almacen
 from radar_inmuebles.modelo import Aviso
 from radar_inmuebles.tasacion import Tasador
+from radar_inmuebles.tests import cfg_test
 
 
 class TestTasador(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.TemporaryDirectory()
         self.db = Almacen(Path(self.dir.name) / "t.sqlite3")
-        self.cfg = cargar(recargar=True)
+        self.cfg = cfg_test()
 
     def tearDown(self):
         self.db.cerrar()

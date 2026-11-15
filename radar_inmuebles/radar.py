@@ -129,6 +129,8 @@ class Radar:
         fuentes = self.fuentes()
         todos = []
         for fuente in fuentes:
+            if self._demasiado_pronto(fuente.nombre):
+                continue
             total_fuente = 0
             for barrio in self.cfg.barrios:
                 avisos = fuente.seguro(barrio)
@@ -142,6 +144,22 @@ class Radar:
                 res.errores.append(f"{fuente.nombre} no devolvió avisos")
         res.revisados = len(todos)
         return todos
+
+    def _demasiado_pronto(self, fuente: str) -> bool:
+        """Algunas fuentes conviene consultarlas espaciadas (Facebook, sobre todo).
+        Se configura con fuentes.<nombre>.cada_minutos."""
+        cada = self.cfg.get(f"fuentes.{fuente}.cada_minutos")
+        if not cada:
+            return False
+        ultima = parse_fecha(self.almacen.ultima_corrida(fuente))
+        if not ultima:
+            return False
+        minutos = (ahora() - ultima).total_seconds() / 60
+        if minutos < float(cada):
+            log.info("  salteo %s: la consulté hace %.0f min (mínimo %s)",
+                     fuente, minutos, cada)
+            return True
+        return False
 
     # ------------------------------------------------------------------
     def _guardar(self, avisos: list, res: Resultado) -> dict:

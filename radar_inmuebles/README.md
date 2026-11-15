@@ -64,17 +64,34 @@ python -m radar_inmuebles watch             # queda monitoreando
 
 ---
 
-## Antes de dejarlo corriendo: dos cosas que tenés que tocar
+## Antes de dejarlo corriendo
 
-**1. Tu presupuesto.** En `config.yaml`:
+**Tu presupuesto ya está cargado: USD 80.000** (`config.yaml → busqueda`).
+
+Con ese techo, esto es lo que podés esperar de cada barrio:
+
+| Barrio | Mediana estimada | Un 3 amb de 65 m² al valor de zona | A USD 80.000 estarías comprando |
+|---|---|---|---|
+| Liniers | ~1.550 USD/m² | ~100.000 | normal, con descuento del 15-25% |
+| Villa Luro | ~1.750 USD/m² | ~114.000 | unidades chicas o para reciclar |
+| Caballito | ~2.250 USD/m² | ~146.000 | solo 45-55 m² antiguos, o algo con un problema |
+
+Traducido: **la mayoría de las alertas te van a llegar de Liniers y Villa Luro.**
+Lo que aparezca de Caballito a USD 80.000 va a venir marcado `⚠️ verificar` muy
+seguido, y con razón: a ese precio en ese barrio casi siempre hay un motivo.
+No es un error del bot, es el mercado.
+
+Si querés más volumen de avisos, las tres palancas, en orden de impacto:
 
 ```yaml
 busqueda:
-  precio_usd_min: 40000      # debajo de esto casi siempre es error o cochera
-  precio_usd_max: 160000     # ← poné tu techo real
+  precio_usd_max: 95000        # la que más mueve la aguja
+  ambientes_max: 4             # incluir 3 y 4 ambientes
+oportunidad:
+  descuento_minimo: 0.12       # hoy está en 0.15
 ```
 
-**2. Las primeras 2-3 corridas no sirven para avisar.** El radar necesita juntar
+**Las primeras 2-3 corridas no sirven para avisar.** El radar necesita juntar
 muestra para saber cuánto vale el m² en cada barrio. Hasta entonces usa los
 valores semilla del `config.yaml`, que son estimativos. Corré:
 
@@ -111,7 +128,7 @@ El **puntaje 0-100** combina: descuento vs la zona (40), margen del reciclado (3
 señales del texto (12), antigüedad del aviso (8) y baja de precio (10). Resta por
 señales de riesgo y por tener poca muestra en la zona.
 
-**Te avisa** cuando `descuento ≥ 18%` **y** `puntaje ≥ 55`. Lo cambiás en
+**Te avisa** cuando `descuento ≥ 15%` **y** `puntaje ≥ 50`. Lo cambiás en
 `config.yaml → oportunidad`.
 
 ### Lo que también mira
@@ -123,7 +140,7 @@ señales de riesgo y por tener poca muestra en la zona.
 - **Bajas de precio**: guarda el historial de cada aviso. Si uno que ya viste
   baja 4% o más, te vuelve a avisar. Un aviso que lleva 90 días y bajó dos veces
   es un vendedor que quiere salir.
-- **Precios sospechosos**: si está más de 60% abajo del mercado, te lo manda
+- **Precios sospechosos**: si está más de 45% abajo del mercado, te lo manda
   igual pero marcado `⚠️ verificar` — casi siempre es un error de carga, una
   cochera clasificada como departamento o una traba legal.
 - **El mismo depto en 3 portales**: lo agrupa por barrio + m² + precio y te
@@ -140,7 +157,7 @@ señales de riesgo y por tener poca muestra en la zona.
 | Properati | JSON embebido | no |
 | RE/MAX | API del sitio | no |
 | Zonaprop | HTML (tiene Cloudflare) | **sí** |
-| Facebook Marketplace | sesión propia — apagado por defecto | **sí** |
+| Facebook Marketplace | tu sesión — pide `login-facebook` primero | **sí** |
 
 **Importante:** los parsers están escritos de forma tolerante (leen el texto de
 la tarjeta con expresiones regulares en vez de depender de una clase CSS), pero
@@ -164,21 +181,34 @@ fuentes:
 
 ### Sobre Facebook Marketplace
 
-Está apagado por defecto y conviene dejarlo así. Marketplace no tiene API: la
-única forma es abrir el sitio con tu sesión iniciada, y las Condiciones de
-Facebook prohíben el acceso automatizado — podés comerte un bloqueo de tu
-cuenta. Si aun así lo querés:
+**Está activado** (`fuentes.facebook.activa: true`), pero necesita un paso
+manual tuyo antes de la primera corrida:
 
 ```bash
-python -m radar_inmuebles login-facebook    # iniciás sesión a mano, una vez
-# después poné fuentes.facebook.activa: true y intervalo_minutos ≥ 60
+python -m radar_inmuebles login-facebook
 ```
 
-Nunca se guarda tu usuario ni tu contraseña: queda un perfil de Chromium en
-`radar_inmuebles/datos/perfil_chromium`.
+Se abre Chromium, iniciás sesión a mano una vez, cerrás. Queda un perfil
+guardado en `radar_inmuebles/datos/perfil_chromium`. **Nunca se guarda tu
+usuario ni tu contraseña en ningún archivo del proyecto.**
 
-Alternativa sin riesgo: creá la búsqueda en Marketplace desde el celular y
-activá las notificaciones de publicaciones nuevas.
+Lo que tenés que saber, sin vueltas:
+
+- Marketplace no tiene API. La única forma de leerlo es abrir el sitio con tu
+  sesión iniciada, y **las Condiciones de Facebook prohíben el acceso
+  automatizado**. El riesgo real es que Facebook te marque o bloquee la cuenta.
+- Por eso está configurado con `cada_minutos: 90`: aunque el radar corra cada
+  45 minutos, Facebook se consulta como mucho cada hora y media. **No bajes ese
+  número de 60.**
+- Los datos que trae son pobres: Marketplace no publica m² en un campo
+  estructurado, así que muchos avisos van a quedar sin tasar. Sirve para
+  detectar dueños directos que no publican en portales, no para el análisis
+  de precio por m².
+- Si preferís cortar el riesgo en cualquier momento: poné `activa: false`.
+
+Alternativa sin riesgo, que podés usar en paralelo: creá la búsqueda en
+Marketplace desde tu celular y activá las notificaciones de publicaciones
+nuevas. No te da el análisis, pero no arriesga nada.
 
 ---
 
@@ -252,8 +282,8 @@ completo, no solo lo que pasó el filtro de WhatsApp.
 
 ```yaml
 oportunidad:
-  descuento_minimo: 0.18      # bajalo a 0.12 si te llegan pocos avisos
-  puntaje_minimo: 55          # subilo a 70 si te llegan demasiados
+  descuento_minimo: 0.15      # bajalo a 0.12 si te llegan pocos avisos
+  puntaje_minimo: 50          # subilo a 65 si te llegan demasiados
   costo_reforma_usd_m2: 400   # pedí presupuesto real y ajustá esto
 ```
 
@@ -270,6 +300,11 @@ cd Workent
 python -m unittest discover -s radar_inmuebles/tests -t . -p "test_*.py"
 ```
 
-91 tests, todos offline: parseo de precios argentinos, medianas robustas,
+100 tests, todos offline: parseo de precios argentinos, medianas robustas,
 scoring, detección de bajas de precio, dedupe entre portales, armado del mensaje
 y el pipeline completo de punta a punta con una fuente falsa.
+
+Los tests usan su propio `tests/config_test.yaml`, así que podés ajustar tu
+`config.yaml` sin romperlos. Hay además un test que valida que tu config siga
+siendo coherente (rango de precios, teléfono, barrios con valor semilla,
+Facebook espaciado).
