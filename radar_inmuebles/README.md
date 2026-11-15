@@ -277,7 +277,7 @@ señales de riesgo y por tener poca muestra en la zona.
 
 | Fuente | Cómo entra | Necesita Playwright |
 |---|---|---|
-| MercadoLibre | API oficial | no |
+| MercadoLibre | sitio web (API oficial si hay token) | no |
 | Argenprop | HTML | no |
 | Properati | JSON embebido | no |
 | RE/MAX | API del sitio | no |
@@ -526,6 +526,13 @@ escribe bien.
 **`telegram-chatid` no encuentra mensajes.** Escribile al bot desde Telegram
 y volvé a correrlo. Telegram descarta los mensajes pendientes a las 24 h.
 
+**MercadoLibre devuelve 403.** Desde 2024 la API pública pide token, así que
+es lo esperable. El radar lo detecta y pasa solo a leer el sitio web; en el log
+vas a ver *"la API de MercadoLibre pide token; paso a leer el sitio web"*. Si
+querés usar la API (trae la fecha de publicación real, que el sitio no siempre
+muestra), creá una app en developers.mercadolibre.com.ar y poné
+`ML_ACCESS_TOKEN` en el `.env`.
+
 **Una fuente devuelve 0 avisos.** Corré `verificar`. Si una sola falla,
 seguramente cambió la URL de búsqueda del portal: se ajusta desde
 `config.yaml` con `url_template`, sin tocar código.
@@ -537,7 +544,7 @@ cd Workent
 python -m unittest discover -s radar_inmuebles/tests -t . -p "test_*.py"
 ```
 
-137 tests, todos offline: parseo de precios argentinos, medianas robustas,
+145 tests, todos offline: parseo de precios argentinos, medianas robustas,
 scoring, detección de bajas de precio, dedupe entre portales, armado del mensaje
 y el pipeline completo de punta a punta con una fuente falsa.
 

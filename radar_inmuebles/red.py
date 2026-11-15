@@ -48,6 +48,9 @@ class Cliente:
         self.max_fallos = max_fallos
         self._fallos: dict[str, int] = {}
         self._ultimo: dict[str, float] = {}
+        # Último código HTTP recibido. Sirve para distinguir "me bloquearon"
+        # de "no hay resultados", que se ven igual desde afuera.
+        self.ultimo_codigo: int | None = None
         self.http = httpx.Client(
             timeout=timeout,
             follow_redirects=True,
@@ -66,7 +69,7 @@ class Cliente:
 
     def get(self, url: str, *, referer: str | None = None,
             params: dict | None = None, headers: dict | None = None,
-            json_esperado: bool = False):
+            json_esperado: bool = False, reintentar_bloqueos: bool = True):
         host = httpx.URL(url).host or url
         if self._fallos.get(host, 0) >= self.max_fallos:
             log.debug("  %s sigue sin responder, lo salteo en esta corrida", host)
@@ -89,9 +92,14 @@ class Cliente:
                 time.sleep(2 ** intento)
                 continue
 
+            self.ultimo_codigo = r.status_code
             if r.status_code == 200:
                 self._fallos[host] = 0
                 return r
+            if r.status_code in (401, 403) and not reintentar_bloqueos:
+                # Falta de permisos: reintentar no cambia nada, solo demora.
+                log.debug("  %s respondió %d, no reintento", host, r.status_code)
+                return None
             if r.status_code in (403, 429, 503):
                 log.warning("  %s respondió %d (bloqueo/anti-bot) intento %d/%d",
                             host, r.status_code, intento, self.reintentos)
@@ -119,10 +127,12 @@ class Cliente:
         return self._fallos.get(host, 0) >= self.max_fallos
 
     def html(self, url: str, **kw) -> str | None:
+        self.ultimo_codigo = None
         r = self.get(url, **kw)
         return r.text if r is not None else None
 
     def json(self, url: str, **kw):
+        self.ultimo_codigo = None
         r = self.get(url, json_esperado=True, **kw)
         if r is None:
             return None

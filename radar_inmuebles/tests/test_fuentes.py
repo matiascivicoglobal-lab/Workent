@@ -20,8 +20,9 @@ def leer(nombre):
 
 class _ClienteFalso:
     """Devuelve siempre el mismo contenido: no hay red en los tests."""
-    def __init__(self, contenido=None, json_datos=None):
+    def __init__(self, contenido=None, json_datos=None, ultimo_codigo=200):
         self.contenido, self.json_datos = contenido, json_datos
+        self.ultimo_codigo = ultimo_codigo
         self.urls = []
 
     def html(self, url, **kw):
@@ -175,6 +176,70 @@ class TestMercadoLibre(unittest.TestCase):
         # ML mete resultados de toda la ciudad con el mismo `q`.
         a = self.fuente._parsear(self.datos["results"][1], "liniers", "departamento")
         self.assertIsNone(a)
+
+
+class TestMercadoLibreWeb(unittest.TestCase):
+    """Desde 2024 la API pública pide token: hay que leer el sitio."""
+
+    def setUp(self):
+        self.cfg = cfg_test()
+        self.html = leer("mercadolibre_web.html")
+        self.fuente = MercadoLibre(_ClienteFalso(self.html), self.cfg)
+
+    def test_parsea_las_tarjetas(self):
+        avisos = self.fuente._parsear_web(self.html, "caballito", "departamento")
+        # El de Palermo y el que no tiene precio quedan afuera.
+        self.assertEqual(len(avisos), 2)
+
+    def test_datos_del_aviso_en_dolares(self):
+        a = self.fuente._parsear_web(self.html, "caballito", "departamento")[0]
+        self.assertEqual(a.id_externo, "MLA1234567890")
+        self.assertEqual(a.precio, 96000)
+        self.assertEqual(a.moneda, "USD")
+        self.assertEqual(a.m2_totales, 65)
+        self.assertEqual(a.ambientes, 3)
+        self.assertEqual(a.banios, 1)
+        self.assertIn("Caballito", a.barrio)
+        self.assertNotIn("#position", a.url, "la url tiene que venir limpia")
+        self.assertTrue(a.imagen)
+
+    def test_precio_en_pesos_y_ph(self):
+        a = self.fuente._parsear_web(self.html, "caballito", "departamento")[1]
+        self.assertEqual(a.precio, 165000000)
+        self.assertEqual(a.moneda, "ARS")
+        self.assertEqual(a.m2_totales, 88)
+        self.assertEqual(a.m2_cubiertos, 72)
+        self.assertEqual(a.tipo, "ph")
+
+    def test_descarta_otro_barrio(self):
+        ids = [a.id_externo for a in
+               self.fuente._parsear_web(self.html, "caballito", "departamento")]
+        self.assertNotIn("MLA5555555555", ids)
+
+    def test_descarta_sin_precio(self):
+        ids = [a.id_externo for a in
+               self.fuente._parsear_web(self.html, "caballito", "departamento")]
+        self.assertNotIn("MLA4444444444", ids)
+
+    def test_url_de_busqueda(self):
+        url = self.fuente._url_web("departamento", "villa luro", 0)
+        self.assertIn("departamentos/venta/capital-federal/villa-luro", url)
+        self.assertIn("3-ambientes", url)
+        self.assertNotIn("_Desde_", url)
+        self.assertIn("_Desde_51", self.fuente._url_web("departamento", "liniers", 1))
+
+    def test_pasa_a_web_si_la_api_bloquea(self):
+        cliente = _ClienteFalso(self.html, json_datos=None, ultimo_codigo=403)
+        fuente = MercadoLibre(cliente, self.cfg)
+        avisos = fuente.buscar("caballito")
+        self.assertTrue(fuente._modo_web, "debería haber cambiado de camino")
+        self.assertTrue(avisos)
+
+    def test_no_pasa_a_web_si_la_api_anda(self):
+        datos = json.loads(leer("mercadolibre_busqueda.json"))
+        fuente = MercadoLibre(_ClienteFalso(json_datos=datos, ultimo_codigo=200), self.cfg)
+        fuente.buscar("liniers")
+        self.assertFalse(fuente._modo_web)
 
 
 if __name__ == "__main__":
