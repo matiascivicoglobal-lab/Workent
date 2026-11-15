@@ -77,6 +77,14 @@ class TestAlmacen(unittest.TestCase):
         self.db.guardar_cotizacion("blue", 1480.0)
         self.assertEqual(self.db.cotizacion_de_hoy(), 1480.0)
 
+    def test_cuenta_los_nuevos_del_dia(self):
+        self.assertEqual(self.db.nuevos_desde(24), 0)
+        self.db.guardar(_aviso("1"))
+        self.db.guardar(_aviso("2"))
+        self.assertEqual(self.db.nuevos_desde(24), 2)
+        self.db.guardar(_aviso("1", precio=90000.0))   # actualizar no suma
+        self.assertEqual(self.db.nuevos_desde(24), 2)
+
     def test_primera_vez_persiste(self):
         self.db.guardar(_aviso())
         primera = self.db.primera_vez("zonaprop:1")

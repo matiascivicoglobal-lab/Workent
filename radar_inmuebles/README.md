@@ -355,11 +355,38 @@ cd radar_inmuebles && docker compose up -d
 docker compose logs -f
 ```
 
-**Opción C — GitHub Actions** (gratis, sin servidor): está en
-`.github/workflows/radar.yml`, corre cada hora. Ojo: las IPs de GitHub están
-bloqueadas por Cloudflare, así que Zonaprop no va a funcionar desde ahí.
-MercadoLibre, Argenprop, Properati y RE/MAX sí. Cargá `CALLMEBOT_APIKEY` en
-*Settings → Secrets and variables → Actions*.
+**Opción C — GitHub Actions** (gratis, sin instalar nada, se configura
+entero desde el navegador):
+
+Hay dos workflows:
+
+- `.github/workflows/radar.yml` — escanea cada hora y te avisa.
+- `.github/workflows/radar-resumen.yml` — un resumen por día a las 19:47,
+  para que sepas que sigue vivo aunque no haya aparecido nada.
+
+Pasos:
+
+1. **Cargá los secrets**: *Settings → Secrets and variables → Actions →
+   New repository secret*. Necesitás `TELEGRAM_TOKEN` y `TELEGRAM_CHAT_ID`
+   (o `CALLMEBOT_APIKEY` si usás WhatsApp).
+2. **El workflow tiene que estar en la rama por defecto del repositorio.**
+   Esto es lo que más confunde: GitHub **solo ejecuta los cron de la rama
+   por defecto**. Si el archivo vive en otra rama, el botón "Run workflow"
+   funciona, pero la corrida automática no arranca nunca.
+3. Probalo a mano: pestaña *Actions* → *Radar Inmuebles* → *Run workflow*.
+
+Tres límites que conviene saber de entrada:
+
+- **Zonaprop y Facebook no funcionan desde GitHub.** Cloudflare bloquea las
+  IPs de los runners y Facebook necesita tu sesión iniciada. Quedan
+  MercadoLibre, Argenprop, Properati y RE/MAX, que igual son la mayor parte
+  del stock de CABA.
+- **La base vive en la caché de Actions.** Ahí se guarda el historial de
+  precios y qué avisos ya te mandó. Si la caché se vacía, el bot vuelve a
+  empezar y te puede repetir avisos una vez.
+- **GitHub apaga los workflows programados tras 60 días sin actividad en el
+  repositorio.** Te manda un mail avisando; alcanza con reactivarlos desde
+  la pestaña Actions.
 
 > Un VPS barato o un servidor cloud comparten rango de IP con miles de bots.
 > Si ves muchos 403, la solución es correrlo en tu casa o configurar
@@ -377,6 +404,7 @@ MercadoLibre, Argenprop, Properati y RE/MAX sí. Cargá `CALLMEBOT_APIKEY` en
 | `verificar` | Prueba cada fuente y el canal de WhatsApp |
 | `zonas` | Valor del m² por barrio, con tamaño de muestra y confianza |
 | `reporte` | Regenera el HTML desde la base, sin volver a scrapear |
+| `resumen` | Manda el resumen del día (`--sin-enviar` para verlo en pantalla) |
 | `probar-aviso` | Manda un mensaje de prueba (`--canal telegram` para probar otro) |
 | `login-facebook` | Abre el navegador para iniciar sesión |
 | `telegram-chatid` | Encuentra tu chat_id (`--guardar` lo escribe en el `.env`) |
@@ -427,7 +455,7 @@ cd Workent
 python -m unittest discover -s radar_inmuebles/tests -t . -p "test_*.py"
 ```
 
-131 tests, todos offline: parseo de precios argentinos, medianas robustas,
+132 tests, todos offline: parseo de precios argentinos, medianas robustas,
 scoring, detección de bajas de precio, dedupe entre portales, armado del mensaje
 y el pipeline completo de punta a punta con una fuente falsa.
 

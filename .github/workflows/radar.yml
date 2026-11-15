@@ -1,9 +1,13 @@
 name: Radar Inmuebles
 
+# OJO: GitHub solo ejecuta los cron de la RAMA POR DEFECTO del repositorio.
+# Si este archivo vive en otra rama, el botón "Run workflow" anda igual,
+# pero la corrida automática cada hora NO.
+
 on:
   schedule:
-    - cron: "17 * * * *"      # cada hora, en el minuto 17
-  workflow_dispatch:           # también a mano desde la pestaña Actions
+    - cron: "17 * * * *"      # cada hora, en el minuto 17 (el :00 está siempre congestionado)
+  workflow_dispatch:           # también a mano, desde la pestaña Actions
 
 concurrency:
   group: radar
@@ -13,6 +17,11 @@ jobs:
   escanear:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      # Sin esto el runner corre en UTC y el horario_activo del config.yaml
+      # (no avisar de madrugada) quedaría corrido 3 horas.
+      TZ: America/Argentina/Buenos_Aires
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,8 +33,27 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r radar_inmuebles/requirements.txt
 
-      # La base guarda el historial de precios y qué ya avisamos:
-      # sin esto, cada corrida te repetiría los mismos avisos.
+      - name: Verificar que estén cargados los secrets
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+        run: |
+          if [ -z "$TELEGRAM_TOKEN$CALLMEBOT_APIKEY" ]; then
+            echo "::error::No hay ningún canal de aviso configurado."
+            echo "Cargá TELEGRAM_TOKEN y TELEGRAM_CHAT_ID en"
+            echo "Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          if [ -n "$TELEGRAM_TOKEN" ] && [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "::error::Falta TELEGRAM_CHAT_ID. Escribile a tu bot y sacalo de"
+            echo "https://api.telegram.org/bot<TU_TOKEN>/getUpdates"
+            exit 1
+          fi
+          echo "Canal de aviso configurado."
+
+      # La base guarda el historial de precios y qué avisos ya mandamos.
+      # Sin esto, cada corrida te repetiría las mismas propiedades.
       - name: Recuperar la base
         uses: actions/cache/restore@v4
         with:
@@ -35,13 +63,14 @@ jobs:
 
       - name: Escanear
         env:
-          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
           ML_ACCESS_TOKEN: ${{ secrets.ML_ACCESS_TOKEN }}
+        # Zonaprop y Facebook quedan afuera acá a propósito: necesitan
+        # Playwright y, sobre todo, Cloudflare bloquea las IPs de GitHub.
+        # Para esas dos fuentes hay que correr el radar en una máquina propia.
         run: python -m radar_inmuebles scan -v
-        # Zonaprop no va a andar acá: Cloudflare bloquea las IPs de GitHub.
-        # Las otras fuentes sí.
 
       - name: Guardar la base
         if: always()

@@ -284,6 +284,12 @@ class Almacen:
             (fuente,)).fetchone()
         return f["ts"] if f else None
 
+    def nuevos_desde(self, horas: int = 24) -> int:
+        corte = (ahora() - timedelta(hours=horas)).isoformat()
+        f = self.con.execute(
+            "SELECT COUNT(*) n FROM avisos WHERE visto_primero >= ?", (corte,)).fetchone()
+        return f["n"] or 0
+
     def resumen(self) -> dict:
         c = self.con.execute(
             "SELECT COUNT(*) n, SUM(activo) activos FROM avisos").fetchone()

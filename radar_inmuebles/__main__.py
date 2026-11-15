@@ -6,6 +6,7 @@
   python -m radar_inmuebles verificar         qué fuentes están respondiendo
   python -m radar_inmuebles zonas             valor del m² por barrio
   python -m radar_inmuebles reporte           regenera el HTML desde la base
+  python -m radar_inmuebles resumen           manda el resumen del día
   python -m radar_inmuebles probar-aviso      manda un mensaje de prueba
       ... --canal telegram                probá otro canal sin tocar la config
   python -m radar_inmuebles login-facebook    abre el navegador para iniciar sesión
@@ -217,6 +218,53 @@ def cmd_reporte(args, cfg) -> int:
     return 0
 
 
+def cmd_resumen(args, cfg) -> int:
+    """Manda el resumen del día. Pensado para una corrida diaria aparte.
+
+    Es el latido del radar: aunque no haya nada que avisar, te confirma que
+    sigue funcionando y te muestra cómo se movió el valor de la zona.
+    """
+    from .almacen import Almacen
+    from .mensajes import recortar, resumen_diario
+    from .notificadores import construir_notificador
+    from .scoring import Evaluador, pasa_filtros_basicos
+    from .tasacion import Tasador
+
+    with Almacen(cfg.db) as almacen:
+        tasador = Tasador(almacen, cfg)
+        motor = Evaluador(tasador, cfg)
+        oportunidades = []
+        for barrio in cfg.barrios:
+            for aviso in almacen.avisos(barrio=barrio, dias=int(args.dias or 7)):
+                if pasa_filtros_basicos(aviso, cfg):
+                    continue
+                ev = motor.evaluar(aviso, baja_precio=almacen.baja_de_precio(aviso.id))
+                if motor.merece_alerta(ev):
+                    oportunidades.append(ev)
+
+        base = almacen.resumen()
+        stats = {
+            "revisados": base["activos"],
+            "nuevos": almacen.nuevos_desde(24),
+            "oportunidades": len(oportunidades),
+        }
+        refs = tasador.todas(cfg.barrios)
+
+    mensaje = recortar(resumen_diario(oportunidades, refs, stats))
+    if args.sin_enviar:
+        print("\n" + mensaje + "\n")
+        return 0
+
+    n = construir_notificador(cfg, canal=args.canal or "")
+    listo, falta = n.configurado()
+    if not listo:
+        print(f"\n  ✗ {falta}\n")
+        return 1
+    ok = n.enviar(mensaje)
+    print(f"\n  {'✓ Resumen enviado por ' + n.nombre if ok else '✗ No se pudo enviar'}\n")
+    return 0 if ok else 1
+
+
 def cmd_login_facebook(args, cfg) -> int:
     from .navegador import Navegador
 
@@ -323,6 +371,7 @@ COMANDOS = {
     "probar-aviso": cmd_probar_aviso,
     "probar-whatsapp": cmd_probar_aviso,      # alias histórico
     "reporte": cmd_reporte,
+    "resumen": cmd_resumen,
     "login-facebook": cmd_login_facebook,
     "telegram-chatid": cmd_telegram_chatid,
     "demo": cmd_demo,
@@ -343,6 +392,8 @@ def main(argv=None) -> int:
     p.add_argument("--canal",
                    help="pisa alertas.destino: telegram | consola | whatsapp:twilio "
                         "| whatsapp:cloud | whatsapp:callmebot")
+    p.add_argument("--dias", type=int,
+                   help="resumen: cuántos días hacia atrás mirar (default 7)")
     p.add_argument("--guardar", action="store_true",
                    help="telegram-chatid: escribe el chat_id en el .env")
     p.add_argument("-v", "--verbose", action="store_true")

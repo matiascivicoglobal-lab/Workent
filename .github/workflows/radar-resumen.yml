@@ -1,0 +1,43 @@
+name: Radar Resumen Diario
+
+# El latido del radar: una vez por día te dice cómo está el valor del m² en
+# cada barrio y qué encontró, aunque no haya nada para avisar. Así sabés que
+# sigue funcionando en vez de quedarte con la duda tras una semana en silencio.
+
+on:
+  schedule:
+    - cron: "47 22 * * *"      # 22:47 UTC = 19:47 en Buenos Aires
+  workflow_dispatch:
+
+jobs:
+  resumen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TZ: America/Argentina/Buenos_Aires
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r radar_inmuebles/requirements.txt
+
+      # Solo lee la base que dejaron las corridas de escaneo. No scrapea nada.
+      - name: Recuperar la base
+        uses: actions/cache/restore@v4
+        with:
+          path: radar_inmuebles/datos
+          key: radar-db-resumen
+          restore-keys: radar-db-
+
+      - name: Mandar el resumen
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+        run: python -m radar_inmuebles resumen --dias 7
