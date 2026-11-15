@@ -1,9 +1,15 @@
 """WhatsApp vía CallMeBot — gratis y sin servidor.
 
 Alta (una sola vez, 2 minutos):
-  1. Agendá el número +34 644 51 95 23 como "CallMeBot".
-  2. Mandale por WhatsApp:  I allow callmebot to send me messages
+  1. Mirá el número vigente en https://www.callmebot.com/blog/free-api-whatsapp-messages/
+     (cambia cada tanto; el histórico es +34 644 51 95 23).
+  2. Agendalo y mandale por WhatsApp:  I allow callmebot to send me messages
   3. Te responde con tu apikey. Ponela en el .env como CALLMEBOT_APIKEY.
+
+OJO: es un servicio gratuito de una sola persona y se llena seguido. Si te
+responde "This Bot is full", no hay nada que configurar de este lado: hay que
+esperar a que habilite un bot nuevo. Mientras tanto usá otro canal
+(telegram es el reemplazo más rápido). Ver el README.
 
 Límite: ~1 mensaje cada 20 segundos. Para avisos personales alcanza y sobra.
 """
@@ -28,9 +34,12 @@ class CallMeBot(Notificador):
 
     def configurado(self) -> tuple[bool, str]:
         if not self.apikey:
-            return False, ("Falta CALLMEBOT_APIKEY en el .env. Mandale "
-                           "'I allow callmebot to send me messages' por WhatsApp "
-                           "al +34 644 51 95 23 y te devuelve la clave.")
+            return False, (
+                "Falta CALLMEBOT_APIKEY en el .env. Se pide mandando "
+                "'I allow callmebot to send me messages' al número que figura en "
+                "callmebot.com/blog/free-api-whatsapp-messages/. "
+                "Si te contesta 'This Bot is full', el servicio no está tomando "
+                "usuarios nuevos: usá --canal telegram o configurá whatsapp:cloud.")
         if not self.telefono:
             return False, "Falta alertas.telefono en config.yaml"
         return True, ""

@@ -6,7 +6,8 @@
   python -m radar_inmuebles verificar         qué fuentes están respondiendo
   python -m radar_inmuebles zonas             valor del m² por barrio
   python -m radar_inmuebles reporte           regenera el HTML desde la base
-  python -m radar_inmuebles probar-whatsapp   manda un mensaje de prueba
+  python -m radar_inmuebles probar-aviso      manda un mensaje de prueba
+      ... --canal telegram                probá otro canal sin tocar la config
   python -m radar_inmuebles login-facebook    abre el navegador para iniciar sesión
 """
 
@@ -39,7 +40,7 @@ def cmd_scan(args, cfg) -> int:
     from .reporte import generar
     from .sheets_export import exportar
 
-    with Radar(cfg, enviar=not args.sin_enviar) as radar:
+    with Radar(cfg, enviar=not args.sin_enviar, canal=args.canal or '') as radar:
         res = radar.correr()
         refs = radar.tasador.todas(cfg.barrios)
         ruta = generar(res.oportunidades, refs, res.como_dict(), cfg.reporte_html)
@@ -74,7 +75,7 @@ def cmd_watch(args, cfg) -> int:
     while True:
         inicio = time.time()
         try:
-            with Radar(cfg, enviar=not args.sin_enviar) as radar:
+            with Radar(cfg, enviar=not args.sin_enviar, canal=args.canal or '') as radar:
                 res = radar.correr()
                 generar(res.oportunidades, radar.tasador.todas(cfg.barrios),
                         res.como_dict(), cfg.reporte_html)
@@ -159,20 +160,23 @@ def cmd_verificar(args, cfg) -> int:
         if navegador:
             navegador.cerrar()
 
-    n = construir_notificador(cfg)
+    n = construir_notificador(cfg, canal=args.canal or "")
     listo, falta = n.configurado()
     print(f"\n  Canal de aviso: {n.nombre} {'✓ configurado' if listo else '✗ ' + falta}")
     print(f"  Teléfono destino: {n.e164(str(cfg.get('alertas.telefono', '')))}\n")
     return 0
 
 
-def cmd_probar_whatsapp(args, cfg) -> int:
+def cmd_probar_aviso(args, cfg) -> int:
     from .notificadores import construir_notificador
 
-    n = construir_notificador(cfg)
+    n = construir_notificador(cfg, canal=args.canal or "")
     listo, falta = n.configurado()
     if not listo:
-        print(f"\n  ✗ {falta}\n")
+        print(f"\n  ✗ Canal '{n.nombre}' no configurado:\n    {falta}\n")
+        print("  Probá otro canal sin tocar la config, por ejemplo:")
+        print("    python -m radar_inmuebles probar-aviso --canal telegram")
+        print("    python -m radar_inmuebles probar-aviso --canal whatsapp:twilio\n")
         return 1
     mensaje = (
         "🏠 *Radar Inmuebles conectado*\n"
@@ -184,7 +188,8 @@ def cmd_probar_whatsapp(args, cfg) -> int:
         "o más por debajo del valor del barrio."
     )
     ok = n.enviar(mensaje)
-    print("\n  ✓ Mensaje enviado\n" if ok else "\n  ✗ No se pudo enviar (ver el log)\n")
+    print(f"\n  ✓ Mensaje enviado por {n.nombre}\n" if ok
+          else "\n  ✗ No se pudo enviar (ver el log)\n")
     return 0 if ok else 1
 
 
@@ -268,7 +273,8 @@ COMANDOS = {
     "watch": cmd_watch,
     "zonas": cmd_zonas,
     "verificar": cmd_verificar,
-    "probar-whatsapp": cmd_probar_whatsapp,
+    "probar-aviso": cmd_probar_aviso,
+    "probar-whatsapp": cmd_probar_aviso,      # alias histórico
     "reporte": cmd_reporte,
     "login-facebook": cmd_login_facebook,
     "demo": cmd_demo,
@@ -285,7 +291,10 @@ def main(argv=None) -> int:
     p.add_argument("--config", help="ruta a otro config.yaml")
     p.add_argument("--cada", type=int, help="minutos entre pasadas (watch)")
     p.add_argument("--sin-enviar", action="store_true",
-                   help="corre todo pero no manda WhatsApp")
+                   help="corre todo pero no manda el aviso")
+    p.add_argument("--canal",
+                   help="pisa alertas.destino: telegram | consola | whatsapp:twilio "
+                        "| whatsapp:cloud | whatsapp:callmebot")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args(argv)
 

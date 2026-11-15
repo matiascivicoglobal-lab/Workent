@@ -38,7 +38,7 @@ class Resultado:
 
 
 class Radar:
-    def __init__(self, ajustes, enviar: bool = True):
+    def __init__(self, ajustes, enviar: bool = True, canal: str = ""):
         self.cfg = ajustes
         self.enviar = enviar
         self.almacen = Almacen(ajustes.db)
@@ -50,7 +50,7 @@ class Radar:
         )
         self.tasador = Tasador(self.almacen, ajustes)
         self.evaluador = Evaluador(self.tasador, ajustes)
-        self.notificador = construir_notificador(ajustes)
+        self.notificador = construir_notificador(ajustes, canal=canal)
         self._navegador: Navegador | None = None
         self._fuentes: list | None = None
         self.usd_ars = 0.0

@@ -45,18 +45,119 @@ pip install playwright && playwright install chromium
 cp radar_inmuebles/.env.example radar_inmuebles/.env
 ```
 
-**Conectá el WhatsApp** (2 minutos, gratis):
+**Conectá el canal de avisos.** Elegí uno:
 
-1. Agendá el número **+34 644 51 95 23** como "CallMeBot".
-2. Mandale por WhatsApp: `I allow callmebot to send me messages`
+### Telegram — 2 minutos, gratis, nunca se cae
+
+1. En Telegram, hablale a **@BotFather** → `/newbot` → elegí un nombre.
+   Te da un token tipo `123456:ABC-DEF...`
+2. Escribile algo a tu bot recién creado (un "hola" alcanza).
+3. Abrí `https://api.telegram.org/bot<TU_TOKEN>/getUpdates` en el navegador y
+   buscá `"chat":{"id":123456789`. Ese número es tu chat id.
+4. En `radar_inmuebles/.env`:
+   ```
+   TELEGRAM_TOKEN=123456:ABC-DEF...
+   TELEGRAM_CHAT_ID=123456789
+   ```
+5. En `config.yaml`: `alertas.destino: telegram`
+
+### WhatsApp vía CallMeBot — gratis, pero depende de un tercero
+
+1. Mirá el número vigente en
+   [callmebot.com](https://www.callmebot.com/blog/free-api-whatsapp-messages/)
+   (cambia cada tanto).
+2. Agendalo y mandale: `I allow callmebot to send me messages`
 3. Te responde con tu *apikey*. Pegala en `radar_inmuebles/.env`:
    `CALLMEBOT_APIKEY=123456`
+
+> **Si te responde "This Bot is full":** el servicio no está tomando usuarios
+> nuevos. No es un problema de tu configuración y no hay nada que puedas
+> hacer del lado del bot. Ver la sección siguiente.
+
+### WhatsApp oficial (Meta Cloud API) — gratis y para siempre, pero lleva rato
+
+Ver [más abajo](#whatsapp-oficial-meta-cloud-api).
+
+---
+
+## Si CallMeBot está lleno
+
+Es un servicio gratuito mantenido por una sola persona y se satura seguido.
+Tres caminos, de más rápido a más robusto:
+
+| Camino | Tiempo | Cómo se ve el aviso | Aguanta |
+|---|---|---|---|
+| **Telegram** | 2 min | igual que el ejemplo, con negritas | para siempre |
+| **Twilio sandbox** | 15 min | igual | se corta cada 24 h |
+| **Meta Cloud API** | ~40 min | en una sola línea | para siempre |
+
+**Mi recomendación: Telegram ahora, Meta Cloud API cuando tengas un rato.**
+El bot ya quedó configurado con `alertas.respaldo: telegram`, así que si
+configurás los dos, cuando CallMeBot vuelva a abrir el aviso sale por WhatsApp
+y si se cae otra vez sale por Telegram solo, sin que toques nada.
+
+Probá cualquier canal sin editar la config:
+
+```bash
+python -m radar_inmuebles probar-aviso --canal telegram
+python -m radar_inmuebles probar-aviso --canal whatsapp:cloud
+```
+
+### Twilio sandbox (el atajo con asterisco)
+
+Rápido de configurar, pero WhatsApp solo te deja recibir mensajes libres
+durante **24 horas** desde tu último mensaje al bot. O sea: tendrías que
+escribirle al sandbox una vez por día o los avisos dejan de llegar. Sirve para
+probar, no para dejarlo corriendo.
+
+1. Cuenta gratis en twilio.com → Messaging → Try it out → WhatsApp sandbox.
+2. Mandá el código `join <dos-palabras>` al número que te muestran.
+3. En el `.env`: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` y
+   `TWILIO_WHATSAPP_FROM=whatsapp:+14155238886`
+4. En `config.yaml`: `proveedor_whatsapp: twilio`
+
+### WhatsApp oficial (Meta Cloud API)
+
+Es la vía que no depende de nadie. Gratis para este volumen y sin riesgo para
+tu cuenta personal, porque usás un número de prueba que te da Meta.
+
+1. **developers.facebook.com** → Mis apps → Crear app → tipo **Empresa**.
+2. Agregá el producto **WhatsApp** → Configurar. Te crea una cuenta de Meta
+   Business y te da un **número de prueba**.
+3. En "Configuración de la API": agregá tu celular como destinatario y
+   verificalo con el código que te llega. Copiá el **identificador del número
+   de teléfono** → ese es `WA_PHONE_NUMBER_ID`.
+4. **Token permanente** (el que te muestra ahí dura 24 h):
+   business.facebook.com → Configuración del negocio → Usuarios → **Usuarios
+   del sistema** → Agregar → asignale la app y la cuenta de WhatsApp →
+   Generar token → permisos `whatsapp_business_messaging` y
+   `whatsapp_business_management` → caducidad **Nunca**. Ese es `WA_TOKEN`.
+5. **Plantilla** (obligatoria para mensajes automáticos): WhatsApp Manager →
+   Plantillas de mensajes → Crear → categoría **Utilidad**, idioma Español,
+   cuerpo con una variable:
+   ```
+   {{1}}
+   ```
+   Nombrala `aviso_propiedad`. Se aprueba en minutos.
+6. En el `.env`:
+   ```
+   WA_PHONE_NUMBER_ID=123456789
+   WA_TOKEN=EAAG...
+   WA_TEMPLATE=aviso_propiedad
+   WA_TEMPLATE_LANG=es
+   ```
+7. En `config.yaml`: `proveedor_whatsapp: cloud`
+
+> **Por qué el aviso se ve peor acá:** WhatsApp no permite saltos de línea
+> dentro de las variables de plantilla. El bot aplana el mensaje a una sola
+> línea con separadores `·`. Tiene toda la información, pero se lee menos
+> cómodo que por Telegram.
 
 Probá que todo esté en orden:
 
 ```bash
 python -m radar_inmuebles demo              # cómo se ve un aviso (sin red)
-python -m radar_inmuebles probar-whatsapp   # te manda un mensaje de prueba
+python -m radar_inmuebles probar-aviso      # te manda un mensaje de prueba
 python -m radar_inmuebles verificar         # qué portales están respondiendo
 python -m radar_inmuebles scan              # una pasada real
 python -m radar_inmuebles watch             # queda monitoreando
@@ -252,10 +353,11 @@ MercadoLibre, Argenprop, Properati y RE/MAX sí. Cargá `CALLMEBOT_APIKEY` en
 | `verificar` | Prueba cada fuente y el canal de WhatsApp |
 | `zonas` | Valor del m² por barrio, con tamaño de muestra y confianza |
 | `reporte` | Regenera el HTML desde la base, sin volver a scrapear |
-| `probar-whatsapp` | Manda un mensaje de prueba |
+| `probar-aviso` | Manda un mensaje de prueba (`--canal telegram` para probar otro) |
 | `login-facebook` | Abre el navegador para iniciar sesión |
 
-Flags útiles: `--sin-enviar` (corre todo pero no manda WhatsApp),
+Flags útiles: `--sin-enviar` (corre todo pero no manda el aviso),
+`--canal telegram` (pisa el canal configurado, sin editar nada),
 `--cada 30` (minutos, para `watch`), `-v` (log detallado).
 
 El reporte HTML queda en `radar_inmuebles/datos/reporte.html`: tiene el ranking
@@ -300,7 +402,7 @@ cd Workent
 python -m unittest discover -s radar_inmuebles/tests -t . -p "test_*.py"
 ```
 
-100 tests, todos offline: parseo de precios argentinos, medianas robustas,
+118 tests, todos offline: parseo de precios argentinos, medianas robustas,
 scoring, detección de bajas de precio, dedupe entre portales, armado del mensaje
 y el pipeline completo de punta a punta con una fuente falsa.
 
