@@ -1,0 +1,10 @@
+# Los .bat tienen que llegar a Windows con saltos de línea CRLF o cmd.exe
+# puede comerse la última línea y fallar con un "goto" sin etiqueta.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Y estos tienen que quedar con LF aunque se editen en Windows.
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

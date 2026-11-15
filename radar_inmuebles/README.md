@@ -340,13 +340,65 @@ nuevas. No te da el análisis, pero no arriesga nada.
 ## Dejarlo corriendo 24/7
 
 **Opción A — tu computadora** (la mejor: IP residencial, los portales no te
-bloquean):
+bloquean, y funcionan las 6 fuentes incluidas Zonaprop y Facebook).
+
+### Windows, paso a paso
+
+Hay scripts para que no tengas que usar la terminal. Están en
+`radar_inmuebles\despliegue\windows\`.
+
+**1. Instalá Python.** Abrí la Microsoft Store, buscá **Python 3.12** e
+instalalo. (Si preferís python.org, al instalar tildá *"Add python.exe to
+PATH"*, si no el instalador no lo va a encontrar.)
+
+**2. Bajá el proyecto.** Dos opciones:
+
+- *Con Git* (recomendado, después actualizás con `git pull`): instalá
+  [Git para Windows](https://git-scm.com/download/win), abrí PowerShell y:
+  ```powershell
+  cd $HOME\Documents
+  git clone https://github.com/matiascivicoglobal-lab/Workent.git
+  ```
+- *Sin instalar nada más*: en GitHub, botón verde **Code** → **Download ZIP**,
+  y descomprimilo en `Documentos`. Ojo: Windows a veces deja todo dentro de
+  una carpeta extra `Workent-main\Workent`; usá la que tiene adentro la
+  carpeta `radar_inmuebles`.
+
+**3. Instalá el radar.** Entrá a
+`Workent\radar_inmuebles\despliegue\windows\` y hacé **doble clic en
+`instalar.bat`**. Tarda unos minutos: instala las dependencias y el navegador
+para Zonaprop. Al final te abre el Bloc de notas: pegá ahí tu token de
+Telegram en la línea `TELEGRAM_TOKEN=` y guardá con Ctrl+S.
+
+**4. Escribile "hola" a tu bot** en Telegram. Sin esto el siguiente paso no
+puede encontrar tu chat.
+
+**5. Doble clic en `probar.bat`.** Busca tu chat_id y lo guarda solo, te manda
+un mensaje de prueba y prueba los 6 portales. Si te llegó el mensaje a
+Telegram, ya está andando.
+
+**6. Doble clic en `radar.bat`.** Queda buscando. Dejá la ventana abierta y
+minimizada; se corta cerrándola.
+
+Los otros scripts:
+
+| Archivo | Para qué |
+|---|---|
+| `una-pasada.bat` | Una sola búsqueda y cierra, para probar |
+| `login-facebook.bat` | Iniciás sesión en Facebook una vez, para Marketplace |
+| `arrancar-con-windows.bat` | El radar arranca solo al prender la compu |
+
+> Si Windows te muestra *"Windows protegió tu PC"* al abrir un `.bat`, es
+> SmartScreen con los archivos bajados de internet: **Más información** →
+> **Ejecutar de todas formas**.
+
+### Linux / Mac
 
 ```bash
 nohup python -m radar_inmuebles watch > radar.log 2>&1 &
 ```
 
-En Linux con systemd, hay un ejemplo en `despliegue/radar.service`.
+Con systemd, hay un ejemplo en `despliegue/radar.service`.
 
 **Opción B — Docker** (en tu compu o en un VPS):
 
