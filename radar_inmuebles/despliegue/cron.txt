@@ -1,0 +1,9 @@
+# Alternativa a `watch`: una pasada cada hora vía cron.
+# Editá con  crontab -e  y pegá (ajustando la ruta):
+
+0 * * * * cd /home/TU_USUARIO/Workent && /usr/bin/python3 -m radar_inmuebles scan >> /tmp/radar.log 2>&1
+
+# En Windows, usá el Programador de tareas con:
+#   Programa:   python
+#   Argumentos: -m radar_inmuebles scan
+#   Iniciar en: C:\ruta\a\Workent

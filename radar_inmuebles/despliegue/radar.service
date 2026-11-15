@@ -1,0 +1,19 @@
+# Copiar a /etc/systemd/system/radar.service y:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now radar
+[Unit]
+Description=Radar de oportunidades inmobiliarias
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/home/%i/Workent
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 -m radar_inmuebles watch
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target

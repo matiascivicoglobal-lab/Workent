@@ -1,0 +1,14 @@
+# Núcleo (obligatorio)
+httpx==0.28.1
+beautifulsoup4==4.15.0
+lxml==5.3.0
+PyYAML==6.0.2
+python-dotenv==1.0.1
+
+# Para Zonaprop y Facebook (opcional pero muy recomendado):
+#   pip install playwright==1.49.0 && playwright install chromium
+# playwright==1.49.0
+
+# Para exportar a Google Sheets (opcional, ya está en el requirements.txt del repo):
+# gspread==6.1.2
+# google-auth==2.29.0

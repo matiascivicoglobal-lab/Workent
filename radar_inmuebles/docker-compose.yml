@@ -1,0 +1,14 @@
+services:
+  radar:
+    build:
+      context: ..
+      dockerfile: radar_inmuebles/Dockerfile
+    container_name: radar-inmuebles
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./datos:/app/radar_inmuebles/datos
+      - ./config.yaml:/app/radar_inmuebles/config.yaml:ro
+    # El navegador headless necesita algo más de /dev/shm
+    shm_size: 1gb

@@ -1,0 +1,84 @@
+# ===========================================================================
+#  RADAR INMUEBLES — configuración
+#  Todo lo que querés tocar está acá. No hace falta editar código.
+# ===========================================================================
+
+busqueda:
+  operacion: venta
+  tipos: [departamento, ph]      # ph suele estar más barato por m² y es reciclable
+  barrios: [caballito, villa luro, liniers]
+  ambientes_min: 3
+  ambientes_max: 3               # poné 4 si querés incluir 3 y 4 ambientes
+  # === AJUSTÁ ESTO A TU PRESUPUESTO REAL ===
+  precio_usd_min: 40000          # debajo de esto casi siempre es error o cochera
+  precio_usd_max: 160000
+  m2_min: 45
+  m2_max: 150
+  excluir_palabras:              # si aparecen en el título/descripción, se descarta
+    - "nuda propiedad"
+    - "usufructo"
+    - "en pozo"
+    - "a estrenar"
+    - "fideicomiso"
+    - "cochera"
+    - "local comercial"
+    - "tiempo compartido"
+
+# --- Qué se considera oportunidad -----------------------------------------
+oportunidad:
+  descuento_minimo: 0.18         # 18% por debajo de la mediana de la zona
+  puntaje_minimo: 55             # 0-100, ver scoring.py
+  descuento_sospechoso: 0.45     # más que esto => se avisa igual pero marcado "verificar".
+                                 # Un 3 amb a reciclar real suele estar 20-35% abajo;
+                                 # 50%+ casi siempre es error de carga o traba legal.
+  costo_reforma_usd_m2: 400      # reciclado integral en CABA (cocina+baño+instalaciones)
+  costos_compra_pct: 0.06        # escritura + sellos + comisión de compra
+  costos_venta_pct: 0.04         # comisión de venta a la salida
+  muestra_minima: 20             # avisos necesarios para confiar en la mediana propia
+
+# Valores semilla USD/m² (se usan solo hasta que el radar junte muestra propia).
+# Son estimativos: el bot los reemplaza por su propia mediana apenas puede.
+valores_referencia:
+  caballito: 2250
+  "villa luro": 1750
+  liniers: 1550
+
+# --- Fuentes ---------------------------------------------------------------
+fuentes:
+  mercadolibre:   {activa: true,  navegador: false}
+  argenprop:      {activa: true,  navegador: false}
+  properati:      {activa: true,  navegador: false}
+  remax:          {activa: true,  navegador: false}
+  zonaprop:       {activa: true,  navegador: true}   # requiere Playwright
+  facebook:       {activa: false, navegador: true}   # ver README: opt-in, usa tu sesión
+
+scraping:
+  paginas_por_barrio: 3          # ~20-30 avisos por página
+  demora_entre_pedidos: 2.5      # segundos; no lo bajes, te bloquean
+  timeout: 30
+  reintentos: 3
+  enriquecer_candidatos: true    # abre la ficha de los que pasan el filtro
+  max_enriquecer: 15             # tope de fichas por corrida
+
+# --- Avisos ----------------------------------------------------------------
+alertas:
+  destino: whatsapp              # whatsapp | telegram | consola
+  proveedor_whatsapp: callmebot  # callmebot | twilio | cloud
+  telefono: "+5491123549925"
+  max_por_corrida: 6             # evita el bombardeo si entran 40 de golpe
+  reenviar_si_baja_precio: true  # vuelve a avisar si el mismo aviso baja de precio
+  baja_precio_minima: 0.04       # 4% de baja para re-avisar
+  resumen_diario: true
+  hora_resumen: 20               # 0-23, hora local
+
+monitoreo:
+  intervalo_minutos: 45
+  horario_activo: [8, 23]        # no manda WhatsApp de madrugada
+  cotizacion: blue               # blue | mep | oficial | manual
+  usd_ars_manual: 1450           # se usa solo si cotizacion = manual
+
+salida:
+  db: datos/radar.sqlite3
+  reporte_html: datos/reporte.html
+  exportar_sheets: false         # usa credentials/service_account.json del repo
+  spreadsheet_id: ""

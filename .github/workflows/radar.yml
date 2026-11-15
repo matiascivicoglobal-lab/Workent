@@ -1,0 +1,60 @@
+name: Radar Inmuebles
+
+on:
+  schedule:
+    - cron: "17 * * * *"      # cada hora, en el minuto 17
+  workflow_dispatch:           # también a mano desde la pestaña Actions
+
+concurrency:
+  group: radar
+  cancel-in-progress: false
+
+jobs:
+  escanear:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r radar_inmuebles/requirements.txt
+
+      # La base guarda el historial de precios y qué ya avisamos:
+      # sin esto, cada corrida te repetiría los mismos avisos.
+      - name: Recuperar la base
+        uses: actions/cache/restore@v4
+        with:
+          path: radar_inmuebles/datos
+          key: radar-db-${{ github.run_id }}
+          restore-keys: radar-db-
+
+      - name: Escanear
+        env:
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ML_ACCESS_TOKEN: ${{ secrets.ML_ACCESS_TOKEN }}
+        run: python -m radar_inmuebles scan -v
+        # Zonaprop no va a andar acá: Cloudflare bloquea las IPs de GitHub.
+        # Las otras fuentes sí.
+
+      - name: Guardar la base
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: radar_inmuebles/datos
+          key: radar-db-${{ github.run_id }}
+
+      - name: Subir el reporte
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte
+          path: radar_inmuebles/datos/reporte.html
+          retention-days: 14
+          if-no-files-found: ignore
