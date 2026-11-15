@@ -9,6 +9,7 @@
   python -m radar_inmuebles probar-aviso      manda un mensaje de prueba
       ... --canal telegram                probá otro canal sin tocar la config
   python -m radar_inmuebles login-facebook    abre el navegador para iniciar sesión
+  python -m radar_inmuebles telegram-chatid   encuentra tu chat_id y lo guarda
 """
 
 from __future__ import annotations
@@ -233,6 +234,52 @@ def cmd_login_facebook(args, cfg) -> int:
     return 0
 
 
+def cmd_telegram_chatid(args, cfg) -> int:
+    """Encuentra el chat_id escuchando los mensajes que le mandaste al bot."""
+    from .ajustes import RAIZ
+    from .telegram_alta import chats_del_bot, enmascarar, guardar_en_env
+
+    token = cfg.secreto("TELEGRAM_TOKEN")
+    if not token:
+        print("\n  ✗ Falta TELEGRAM_TOKEN en radar_inmuebles/.env\n"
+              "    Es el token que te dio @BotFather.\n")
+        return 1
+
+    print(f"\n  Token: {enmascarar(token)}")
+    chats, error = chats_del_bot(token)
+    if error:
+        print(f"  ✗ {error}\n")
+        return 1
+
+    if not chats:
+        print("\n  No encontré ningún mensaje todavía.\n"
+              "  Abrí Telegram, buscá tu bot y mandale cualquier cosa (un 'hola'),\n"
+              "  después volvé a correr este comando.\n"
+              "  Ojo: Telegram solo guarda los mensajes 24 horas.\n")
+        return 1
+
+    print(f"  Encontré {len(chats)} chat(s):\n")
+    for c in chats:
+        print(f"    {c['id']:>14}   {c['nombre']}  ({c['tipo']})")
+
+    elegido = chats[0]["id"]
+    if len(chats) > 1:
+        print(f"\n  Hay más de uno. Uso el primero: {elegido}")
+        print("  Si querés otro, poné TELEGRAM_CHAT_ID a mano en el .env.")
+
+    if args.guardar:
+        ruta = RAIZ / ".env"
+        guardar_en_env(ruta, elegido)
+        print(f"\n  ✓ Guardado TELEGRAM_CHAT_ID={elegido} en {ruta}")
+        print("    Probalo con: python -m radar_inmuebles probar-aviso --canal telegram\n")
+    else:
+        print(f"\n  Para guardarlo automáticamente:\n"
+              f"    python -m radar_inmuebles telegram-chatid --guardar\n"
+              f"  O pegá esto en radar_inmuebles/.env:\n"
+              f"    TELEGRAM_CHAT_ID={elegido}\n")
+    return 0
+
+
 def cmd_demo(args, cfg) -> int:
     """Muestra cómo se ve una alerta, sin tocar internet."""
     from .mensajes import alerta
@@ -277,6 +324,7 @@ COMANDOS = {
     "probar-whatsapp": cmd_probar_aviso,      # alias histórico
     "reporte": cmd_reporte,
     "login-facebook": cmd_login_facebook,
+    "telegram-chatid": cmd_telegram_chatid,
     "demo": cmd_demo,
 }
 
@@ -295,6 +343,8 @@ def main(argv=None) -> int:
     p.add_argument("--canal",
                    help="pisa alertas.destino: telegram | consola | whatsapp:twilio "
                         "| whatsapp:cloud | whatsapp:callmebot")
+    p.add_argument("--guardar", action="store_true",
+                   help="telegram-chatid: escribe el chat_id en el .env")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args(argv)
 

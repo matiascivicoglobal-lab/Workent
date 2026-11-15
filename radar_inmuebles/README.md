@@ -49,17 +49,33 @@ cp radar_inmuebles/.env.example radar_inmuebles/.env
 
 ### Telegram — 2 minutos, gratis, nunca se cae
 
+**Es el canal configurado por defecto** (`alertas.destino: telegram`).
+
 1. En Telegram, hablale a **@BotFather** → `/newbot` → elegí un nombre.
    Te da un token tipo `123456:ABC-DEF...`
-2. Escribile algo a tu bot recién creado (un "hola" alcanza).
-3. Abrí `https://api.telegram.org/bot<TU_TOKEN>/getUpdates` en el navegador y
-   buscá `"chat":{"id":123456789`. Ese número es tu chat id.
-4. En `radar_inmuebles/.env`:
+2. Pegá el token en `radar_inmuebles/.env`:
    ```
    TELEGRAM_TOKEN=123456:ABC-DEF...
-   TELEGRAM_CHAT_ID=123456789
    ```
-5. En `config.yaml`: `alertas.destino: telegram`
+3. Abrí tu bot en Telegram y mandale cualquier cosa (un "hola" alcanza).
+   Telegram no te dice tu `chat_id` hasta que le escribas.
+4. Dejá que el bot lo averigüe solo:
+   ```bash
+   python -m radar_inmuebles telegram-chatid --guardar
+   ```
+   Te lo busca, te lo muestra y lo escribe en el `.env`.
+5. Probalo:
+   ```bash
+   python -m radar_inmuebles probar-aviso
+   ```
+
+> Si `telegram-chatid` dice que no encontró mensajes: escribile al bot y
+> volvé a correrlo. Telegram solo guarda los mensajes pendientes 24 horas.
+
+> **El token es una contraseña.** Vive solo en `radar_inmuebles/.env`, que
+> está en el `.gitignore` y nunca se sube. Si alguna vez se te escapa
+> (lo pegaste en un chat, en una captura, en un issue), regeneralo con
+> `/revoke` en @BotFather y pegá el nuevo en el `.env`.
 
 ### WhatsApp vía CallMeBot — gratis, pero depende de un tercero
 
@@ -92,9 +108,17 @@ Tres caminos, de más rápido a más robusto:
 | **Meta Cloud API** | ~40 min | en una sola línea | para siempre |
 
 **Mi recomendación: Telegram ahora, Meta Cloud API cuando tengas un rato.**
-El bot ya quedó configurado con `alertas.respaldo: telegram`, así que si
-configurás los dos, cuando CallMeBot vuelva a abrir el aviso sale por WhatsApp
-y si se cae otra vez sale por Telegram solo, sin que toques nada.
+
+Cuando tengas WhatsApp andando, en `config.yaml` poné:
+
+```yaml
+alertas:
+  destino: whatsapp
+  respaldo: telegram
+```
+
+Así el aviso sale por WhatsApp y, si el proveedor se cae, sale por Telegram
+solo, sin que toques nada.
 
 Probá cualquier canal sin editar la config:
 
@@ -355,6 +379,7 @@ MercadoLibre, Argenprop, Properati y RE/MAX sí. Cargá `CALLMEBOT_APIKEY` en
 | `reporte` | Regenera el HTML desde la base, sin volver a scrapear |
 | `probar-aviso` | Manda un mensaje de prueba (`--canal telegram` para probar otro) |
 | `login-facebook` | Abre el navegador para iniciar sesión |
+| `telegram-chatid` | Encuentra tu chat_id (`--guardar` lo escribe en el `.env`) |
 
 Flags útiles: `--sin-enviar` (corre todo pero no manda el aviso),
 `--canal telegram` (pisa el canal configurado, sin editar nada),
@@ -402,7 +427,7 @@ cd Workent
 python -m unittest discover -s radar_inmuebles/tests -t . -p "test_*.py"
 ```
 
-118 tests, todos offline: parseo de precios argentinos, medianas robustas,
+131 tests, todos offline: parseo de precios argentinos, medianas robustas,
 scoring, detección de bajas de precio, dedupe entre portales, armado del mensaje
 y el pipeline completo de punta a punta con una fuente falsa.
 

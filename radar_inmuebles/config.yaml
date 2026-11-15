@@ -63,11 +63,12 @@ scraping:
 
 # --- Avisos ----------------------------------------------------------------
 alertas:
-  destino: whatsapp              # whatsapp | telegram | consola
+  destino: telegram              # whatsapp | telegram | consola
   proveedor_whatsapp: callmebot  # callmebot | twilio | cloud
   # Si el canal principal falla (proveedor caído, token vencido, sin cupo),
   # el aviso sale por acá. Dejalo vacío para no usar respaldo.
-  respaldo: telegram             # telegram | consola | whatsapp:twilio | ...
+  # Cuando tengas WhatsApp andando, poné destino: whatsapp y respaldo: telegram.
+  respaldo: ""                   # telegram | consola | whatsapp:twilio | ...
   telefono: "+5491123549925"
   max_por_corrida: 6             # evita el bombardeo si entran 40 de golpe
   reenviar_si_baja_precio: true  # vuelve a avisar si el mismo aviso baja de precio
