@@ -37,13 +37,13 @@ rem --- 2. Dependencias -----------------------------------------------------
 echo  [2/4] Instalando dependencias (tarda un minuto)...
 "%VPY%" -m pip install --upgrade pip --quiet --disable-pip-version-check
 "%VPY%" -m pip install -r radar_inmuebles\requirements.txt --quiet --disable-pip-version-check
-if errorlevel 1 goto :error
+if errorlevel 1 goto :error_pip
 
 rem --- 3. Navegador para Zonaprop y Facebook -------------------------------
 echo  [3/4] Instalando el navegador para Zonaprop y Facebook...
 echo        (son unos 130 MB, la primera vez tarda)
 "%VPY%" -m pip install playwright==1.49.0 --quiet --disable-pip-version-check
-if errorlevel 1 goto :error
+if errorlevel 1 goto :error_pip
 "%VPY%" -m playwright install chromium
 if errorlevel 1 (
     echo.
@@ -97,6 +97,34 @@ echo      e instalalo. Despues volve a ejecutar este archivo.
 echo.
 echo      Opcion manual: https://www.python.org/downloads/
 echo      IMPORTANTE: al instalar, tilda "Add python.exe to PATH".
+echo.
+pause
+exit /b 1
+
+:error_pip
+echo.
+echo  ============================================================
+echo   [X] pip no pudo descargar los paquetes.
+echo  ============================================================
+echo.
+echo   Si arriba dice "WinError 10061", "Failed to establish a new
+echo   connection" o "Max retries exceeded", el problema NO es el
+echo   radar: algo esta bloqueando el acceso a pypi.org.
+echo.
+echo   Probalos en este orden:
+echo.
+echo    1. Compartí internet desde el celular (anclaje a red / zona
+echo       wifi portatil), conecta la compu ahi y volve a ejecutar
+echo       este archivo. Si asi funciona, lo bloquea tu red.
+echo.
+echo    2. Pausa el antivirus unos minutos y reintenta. El escudo
+echo       web de varios antivirus corta las descargas de pip.
+echo.
+echo    3. Si estas en una red de trabajo, pedi que habiliten
+echo       pypi.org y files.pythonhosted.org
+echo.
+echo   Para saber cual de los tres es, ejecuta  diagnostico.bat
+echo   y mandame la captura.
 echo.
 pause
 exit /b 1
